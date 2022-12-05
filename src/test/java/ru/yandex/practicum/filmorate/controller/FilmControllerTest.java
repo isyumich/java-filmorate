@@ -20,7 +20,10 @@ public class FilmControllerTest {
     void validateDescException() {
         final Film filmWithEmptyDesc = Film.builder()
                 .id(1)
-                .description("")
+                .description("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
+                        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
+                        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
+                        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
                 .name("name1")
                 .releaseDate(LocalDate.of(2000, 1, 1))
                 .duration(180)
@@ -65,7 +68,7 @@ public class FilmControllerTest {
     }
 
     @Test
-    void validateAlreadyExistFilmTest() {
+    void validateUpdateNotExistFilmTest() {
         final Film film = Film.builder()
                 .id(1)
                 .description("desc1")
@@ -74,6 +77,7 @@ public class FilmControllerTest {
                 .duration(180)
                 .build();
         filmController.addNewFilm(film);
-        assertThrows(IsAlreadyFilmExistException.class, () -> filmController.addNewFilm(film), "without name exception");
+        film.setId(2);
+        assertThrows(IsAlreadyFilmExistException.class, () -> filmController.updateFilm(film), "without exception");
     }
 }

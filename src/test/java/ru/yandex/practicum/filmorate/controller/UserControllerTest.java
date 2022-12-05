@@ -64,6 +64,7 @@ public class UserControllerTest {
                 .birthday(LocalDate.of(1994, 4, 3))
                 .build();
         userController.addNewUser(user);
-        assertThrows(IsAlreadyUserExistException.class, () -> userController.addNewUser(user), "without already exist exception");
+        user.setId(2);
+        assertThrows(IsAlreadyUserExistException.class, () -> userController.updateUser(user), "without exception");
     }
 }
