@@ -10,72 +10,52 @@ import java.time.LocalDate;
 
 public class FilmControllerTest {
     FilmController filmController;
+    Film film;
 
     @BeforeEach
     public void beforeEach() {
         filmController = new FilmController();
+        film = createFilm();
+    }
+
+    private Film createFilm() {
+        return Film.builder()
+                .description("DescriptionFilm")
+                .name("NameFilm")
+                .releaseDate(LocalDate.of(2000, 1, 1))
+                .duration(180)
+                .build();
     }
 
     @Test
     void validateDescException() {
-        final Film filmWithEmptyDesc = Film.builder()
-                .id(1)
-                .description("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
-                        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
-                        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
-                        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-                .name("name1")
-                .releaseDate(LocalDate.of(2000, 1, 1))
-                .duration(180)
-                .build();
-        assertThrows(FilmDescValidationException.class, () -> filmController.addNewFilm(filmWithEmptyDesc), "without desc exception");
+        film.setDescription("Пол Эджкомб — начальник блока смертников в тюрьме «Холодная гора», каждый из узников" +
+                " которого однажды проходит «зеленую милю» по пути к месту казни. Пол повидал много заключённых" +
+                " и надзирателей за время работы. Однако гигант Джон Коффи, обвинённый в страшном преступлении, " +
+                "стал одним из самых необычных обитателей блока.");
+        assertThrows(FilmDescValidationException.class, () -> filmController.addNewFilm(film), "without desc exception");
     }
 
     @Test
     void validateDurationException() {
-        final Film filmZeroDuration = Film.builder()
-                .id(1)
-                .description("desc1")
-                .name("name1")
-                .releaseDate(LocalDate.of(2000, 1, 1))
-                .duration(0)
-                .build();
-        assertThrows(FilmDurationValidationException.class, () -> filmController.addNewFilm(filmZeroDuration), "without duration exception");
+        film.setDuration(0);
+        assertThrows(FilmDurationValidationException.class, () -> filmController.addNewFilm(film), "without duration exception");
     }
 
     @Test
     void validateNameException() {
-        final Film filmWithEmptyName = Film.builder()
-                .id(1)
-                .description("desc1")
-                .name("")
-                .releaseDate(LocalDate.of(2000, 1, 1))
-                .duration(180)
-                .build();
-        assertThrows(FilmNameValidationException.class, () -> filmController.addNewFilm(filmWithEmptyName), "without name exception");
+        film.setName("");
+        assertThrows(FilmNameValidationException.class, () -> filmController.addNewFilm(film), "without name exception");
     }
 
     @Test
     void validateReleaseDateException() {
-        final Film filmWithTooEarlyReleaseDate = Film.builder()
-                .id(1)
-                .description("desc1")
-                .name("name1")
-                .releaseDate(LocalDate.of(1000, 1, 1))
-                .duration(180)
-                .build();
-        assertThrows(FilmReleaseDateValidationException.class, () -> filmController.addNewFilm(filmWithTooEarlyReleaseDate), "without name exception");
+        film.setReleaseDate(LocalDate.of(1800, 1,1));
+        assertThrows(FilmReleaseDateValidationException.class, () -> filmController.addNewFilm(film), "without name exception");
     }
 
     @Test
     void validateUpdateNotExistFilmTest() {
-        final Film film = Film.builder()
-                .id(1)
-                .description("desc1")
-                .name("name1")
-                .releaseDate(LocalDate.of(2000, 1, 1))
-                .duration(180)
-                .build();
         filmController.addNewFilm(film);
         film.setId(2);
         assertThrows(IsAlreadyFilmExistException.class, () -> filmController.updateFilm(film), "without exception");
