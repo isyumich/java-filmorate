@@ -28,20 +28,20 @@ public class FilmService {
             Film film = filmStorage.getFilms().get(filmId);
             Set<Long> newSetWithLikes = film.getUsersWhoLiked();
             switch (typeOperation) {
-                case ("DELETE") -> {
+                case ("DELETE"):
                     if (newSetWithLikes.contains(userId)) {
                         newSetWithLikes.remove(userId);
                     } else {
                         throw new NotFoundException("Данный пользователь не ставил лайк этому фильму, удаление невозможно");
                     }
                     log.info("Удален лайк от пользователя");
-                }
-                case ("ADD") -> {
+                    break;
+                case ("ADD"):
                     newSetWithLikes.add(userId);
                     log.info("Добавлен лайк от пользователя");
-                }
-                default -> {
-                }
+                    break;
+                default:
+                    break;
             }
             film.setUsersWhoLiked(newSetWithLikes);
             return film;

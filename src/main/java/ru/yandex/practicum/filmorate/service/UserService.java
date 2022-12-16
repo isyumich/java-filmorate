@@ -30,16 +30,16 @@ public class UserService {
             Set<Long> firstUserFriendsSet = firstUser.getFriendsIdsSet();
             Set<Long> secondUserFriendsSet = secondUser.getFriendsIdsSet();
             switch (typeOperation) {
-                case "DELETE" -> {
+                case "DELETE":
                     firstUserFriendsSet.remove(secondUser.getId());
                     secondUserFriendsSet.remove(firstUser.getId());
-                }
-                case "ADD" -> {
+                    break;
+                case "ADD":
                     firstUserFriendsSet.add(secondUser.getId());
                     secondUserFriendsSet.add(firstUser.getId());
-                }
-                default -> {
-                }
+                    break;
+                default:
+                    break;
             }
             firstUser.setFriendsIdsSet(firstUserFriendsSet);
             secondUser.setFriendsIdsSet(secondUserFriendsSet);
