@@ -55,6 +55,6 @@ public class FilmService {
         return filmStorage.findFilms().stream()
                 .sorted((o1, o2) -> (int) (o2.getCountLikes() - o1.getCountLikes()))
                 .limit(Long.parseLong(countFilms))
-                .toList();
+                .collect(Collectors.toList());
     }
 }

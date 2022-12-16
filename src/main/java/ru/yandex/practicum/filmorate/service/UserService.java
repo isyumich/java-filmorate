@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @FieldDefaults(level = AccessLevel.PUBLIC)
@@ -53,8 +54,8 @@ public class UserService {
         User firstUser = userStorage.getUsers().get(firstUserId);
         User secondUser = userStorage.getUsers().get(secondUserId);
         if (firstUser != null && secondUser != null) {
-            List<Long> firstUserFriendsList = firstUser.getFriendsIdsSet().stream().toList();
-            List<Long> secondUserFriendsList = secondUser.getFriendsIdsSet().stream().toList();
+            List<Long> firstUserFriendsList = firstUser.getFriendsIdsSet().stream().collect(Collectors.toList());
+            List<Long> secondUserFriendsList = secondUser.getFriendsIdsSet().stream().collect(Collectors.toList());
             List<Long> mutualFriendsIdsList = new ArrayList<>();
             for (long firstFriendFriendId : firstUserFriendsList) {
                 for (int j = 0; j < secondUserFriendsList.size(); j++) {
