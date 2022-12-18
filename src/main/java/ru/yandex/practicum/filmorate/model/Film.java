@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnNotWebApplication;
 
 import java.time.LocalDate;
 import java.util.Set;

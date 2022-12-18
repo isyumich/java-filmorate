@@ -8,18 +8,17 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.TypeOperations;
-import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @RestController
 @RequestMapping("/films")
-@FieldDefaults(level = AccessLevel.PUBLIC)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class FilmController {
-    private final FilmService filmService;
+    final FilmService filmService;
+    final String pathForFilmLike = "/{id}/like/{userId}";
 
     @Autowired
     public FilmController(FilmService filmService) {
@@ -34,7 +33,7 @@ public class FilmController {
     }
 
 
-    @DeleteMapping("/{id}/like/{userId}")
+    @DeleteMapping(pathForFilmLike)
     Film deleteLikeFromFilm(@PathVariable("id") long filmId, @PathVariable("userId") Long userId) {
         log.info("Получен запрос DELETE на удаление лайка у фильма " + filmId);
         return filmService.addOrDeleteLikeToFilm(filmId, userId, TypeOperations.DELETE.toString());
@@ -46,7 +45,8 @@ public class FilmController {
         log.info("Получен запрос PUT на обновление фильма");
         return filmService.filmStorage.updateFilm(film);
     }
-    @PutMapping("/{id}/like/{userId}")
+
+    @PutMapping(pathForFilmLike)
     Film addLikeToFilm(@PathVariable("id") long filmId, @PathVariable("userId") Long userId) {
         log.info("Получен запрос PUT добавление лайка фильму " + filmId);
         return filmService.addOrDeleteLikeToFilm(filmId, userId, TypeOperations.ADD.toString());

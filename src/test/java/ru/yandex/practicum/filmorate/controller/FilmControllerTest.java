@@ -8,10 +8,10 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.time.LocalDate;
 import java.util.HashSet;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class FilmControllerTest {
     FilmController filmController;

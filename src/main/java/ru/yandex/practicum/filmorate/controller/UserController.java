@@ -8,18 +8,17 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.TypeOperations;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 @Slf4j
 @RestController
 @RequestMapping("/users")
-@FieldDefaults(level = AccessLevel.PUBLIC)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserController {
-    private final UserService userService;
+    final UserService userService;
+    final String pathForAddOrDeleteFriends = "/{id}/friends/{friendId}";
 
     @Autowired
     public UserController(UserService userService) {
@@ -33,7 +32,7 @@ public class UserController {
     }
 
 
-    @DeleteMapping("/{id}/friends/{friendId}")
+    @DeleteMapping(pathForAddOrDeleteFriends)
     User deleteFromFriend(@PathVariable("id") long firstUserId, @PathVariable("friendId") long secondUserId) {
         log.info("Получен запрос DELETE на удаление из друзей у пользователя " + firstUserId + " пользователя " + secondUserId);
         return userService.addOrDeleteToFriends(firstUserId, secondUserId, TypeOperations.DELETE.toString());
@@ -44,7 +43,8 @@ public class UserController {
     User updateUser(@RequestBody User user) {
         return userService.userStorage.updateUser(user);
     }
-    @PutMapping("/{id}/friends/{friendId}")
+
+    @PutMapping(pathForAddOrDeleteFriends)
     User addToFriend(@PathVariable("id") long firstUserId, @PathVariable("friendId") long secondUserId) {
         log.info("Получен запрос PUT на добавление в друзья от пользователя " + firstUserId + " пользователя " + secondUserId);
         return userService.addOrDeleteToFriends(firstUserId, secondUserId, TypeOperations.ADD.toString());
