@@ -34,7 +34,7 @@ public class FilmControllerTest {
     }
 
     @Test
-    void validateDescException() {
+    void validateDescExceptionTest() {
         film.setDescription("Пол Эджкомб — начальник блока смертников в тюрьме «Холодная гора», каждый из узников" +
                 " которого однажды проходит «зеленую милю» по пути к месту казни. Пол повидал много заключённых" +
                 " и надзирателей за время работы. Однако гигант Джон Коффи, обвинённый в страшном преступлении, " +
@@ -43,20 +43,20 @@ public class FilmControllerTest {
     }
 
     @Test
-    void validateDurationException() {
+    void validateDurationExceptionTest() {
         film.setDuration(0);
         assertThrows(ValidationException.class, () -> filmController.addNewFilm(film), "without duration exception");
     }
 
     @Test
-    void validateNameException() {
+    void validateNameExceptionTest() {
         film.setName("");
         assertThrows(ValidationException.class, () -> filmController.addNewFilm(film), "without name exception");
     }
 
     @Test
-    void validateReleaseDateException() {
-        film.setReleaseDate(LocalDate.of(1800, 1,1));
+    void validateReleaseDateExceptionTest() {
+        film.setReleaseDate(LocalDate.of(1800, 1, 1));
         assertThrows(ValidationException.class, () -> filmController.addNewFilm(film), "without name exception");
     }
 

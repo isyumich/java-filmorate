@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class UserControllerTest {
     UserController userController;
     User user;
+
     @BeforeEach
     public void BeforeEach() {
         userController = new UserController(new UserService(new InMemoryUserStorage()));
@@ -38,7 +39,7 @@ public class UserControllerTest {
 
     @Test
     void validateBirthdayTest() {
-        user.setBirthday(LocalDate.of(2023, 1, 1));
+        user.setBirthday(LocalDate.of(2025, 1, 1));
         assertThrows(ValidationException.class, () -> userController.addNewUser(user), "without birthday exception");
     }
 

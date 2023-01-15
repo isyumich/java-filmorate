@@ -3,36 +3,47 @@ package ru.yandex.practicum.filmorate.storage.film;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.MPA;
+import ru.yandex.practicum.filmorate.validation.FilmValidation;
 
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
-@FieldDefaults(level= AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Component
+@Qualifier("inMemoryFilmStorage")
 public class InMemoryFilmStorage implements FilmStorage {
-    static final int MAX_LENGTH_DESCRIPTION = 200;
-    static final int MIN_DURATION = 0;
-    static final LocalDate MIN_RELEASE_DATE = LocalDate.of(1895, 12, 28);
+    final FilmValidation filmValidation = new FilmValidation();
 
     long nextId = 1;
     final Map<Long, Film> films = new HashMap<>();
+    final List<Genre> genres = List.of(
+            Genre.builder().id(1).name("Комедия").build(),
+            Genre.builder().id(2).name("Триллер").build(),
+            Genre.builder().id(3).name("Боевик").build(),
+            Genre.builder().id(4).name("Драма").build(),
+            Genre.builder().id(5).name("Мелодрама").build(),
+            Genre.builder().id(6).name("Ужасы").build());
 
-    public Map<Long, Film> getFilms() {
-        return films;
-    }
+    final List<MPA> MPAList = List.of(
+            MPA.builder().id(1).name("G").build(),
+            MPA.builder().id(2).name("PG").build(),
+            MPA.builder().id(3).name("PG-13").build(),
+            MPA.builder().id(4).name("R").build(),
+            MPA.builder().id(5).name("NC-17").build());
 
+    @Override
     public Film addNewFilm(Film film) {
-        if (validateFilmFields(film)) {
+        if (filmValidation.validateFilmFields(film)) {
             film.setId(nextId++);
-            film.setUsersWhoLiked(new HashSet<>());
+            setEmptyLikesSet(film);
+            setEmptyGenresList(film);
             films.put(film.getId(), film);
             log.info("Добавлен новый фильм с id: " + film.getId());
         } else {
@@ -41,8 +52,9 @@ public class InMemoryFilmStorage implements FilmStorage {
         return film;
     }
 
+    @Override
     public Film updateFilm(Film film) {
-        if (validateFilmFields(film)) {
+        if (filmValidation.validateFilmFields(film)) {
             if (!films.containsKey(film.getId())) {
                 log.debug("Фильма с таким id не существует");
                 throw new NotFoundException("фильма с таким id не существует");
@@ -52,16 +64,17 @@ public class InMemoryFilmStorage implements FilmStorage {
         } else {
             log.info("Поля заполнены неверно");
         }
-        if (film.getUsersWhoLiked() == null) {
-            film.setUsersWhoLiked(new HashSet<>());
-        }
+        setEmptyLikesSet(film);
+        setEmptyGenresList(film);
         return film;
     }
 
-    public Collection<Film> findFilms() {
-        return films.values();
+    @Override
+    public List<Film> findFilms() {
+        return new ArrayList<>(films.values());
     }
 
+    @Override
     public Film findFilm(long filmId) {
         if (films.containsKey(filmId)) {
             return films.get(filmId);
@@ -70,40 +83,72 @@ public class InMemoryFilmStorage implements FilmStorage {
         }
     }
 
-
-    boolean validateName(Film film) {
-        if (film.getName() != null && film.getName().length() > 0) {
-            return  true;
+    @Override
+    public Film addOrDeleteLikeToFilm(long filmId, long userId, String typeOperation) {
+        if (films.containsKey(filmId)) {
+            Film film = films.get(filmId);
+            Set<Long> newSetWithLikes = film.getUsersWhoLiked();
+            switch (typeOperation) {
+                case ("DELETE"):
+                    if (newSetWithLikes.contains(userId)) {
+                        newSetWithLikes.remove(userId);
+                    } else {
+                        throw new NotFoundException("Данный пользователь не ставил лайк этому фильму, удаление невозможно");
+                    }
+                    log.info("Удален лайк от пользователя");
+                    break;
+                case ("ADD"):
+                    newSetWithLikes.add(userId);
+                    log.info("Добавлен лайк от пользователя");
+                    break;
+                default:
+                    break;
+            }
+            film.setUsersWhoLiked(newSetWithLikes);
+            return film;
         } else {
-            throw new ValidationException("Название фильма не может быть пустым");
+            throw new NotFoundException("Фильм с таким id не найден");
+        }
+
+    }
+
+    @Override
+    public List<Film> findMostPopularFilms(String countFilms) {
+        return findFilms().stream()
+                .sorted((o1, o2) -> (int) (o2.getCountLikes() - o1.getCountLikes()))
+                .limit(Long.parseLong(countFilms))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Genre> findAllGenres() {
+        return genres;
+    }
+
+    @Override
+    public Genre findGenre(int genreId) {
+        return genres.get(genreId);
+    }
+
+    @Override
+    public List<MPA> findAllMPA() {
+        return MPAList;
+    }
+
+    @Override
+    public MPA findMPA(int mpaId) {
+        return MPAList.get(mpaId);
+    }
+
+    private void setEmptyLikesSet(Film film) {
+        if (film.getUsersWhoLiked() == null) {
+            film.setUsersWhoLiked(new HashSet<>());
         }
     }
 
-    boolean validateDescription(Film film) {
-        if (film.getDescription().length() <= MAX_LENGTH_DESCRIPTION) {
-            return true;
-        } else {
-            throw new ValidationException("Максимальная длина описания - 200 символов");
+    private void setEmptyGenresList(Film film) {
+        if (film.getGenres() == null) {
+            film.setGenres(new ArrayList<>());
         }
-    }
-
-    boolean validateReleaseDate(Film film) {
-        if (!film.getReleaseDate().isBefore(MIN_RELEASE_DATE)) {
-            return true;
-        } else {
-            throw new ValidationException("Дата выхода фильма не может быть раньше 28.12.1895");
-        }
-    }
-
-    boolean validateDuration(Film film) {
-        if (film.getDuration() > MIN_DURATION) {
-            return true;
-        } else {
-            throw new ValidationException("Продолжительность фильма должна быть больше 0");
-        }
-    }
-
-    boolean validateFilmFields(Film film) {
-        return validateName(film) && validateDescription(film) && validateReleaseDate(film) && validateDuration(film);
     }
 }
