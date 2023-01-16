@@ -45,7 +45,7 @@ public class InMemoryFilmStorage implements FilmStorage {
             setEmptyLikesSet(film);
             setEmptyGenresList(film);
             films.put(film.getId(), film);
-            log.info("Добавлен новый фильм с id: " + film.getId());
+            log.info(String.format("%s %d", "Добавлен новый фильм с id", film.getId()));
         } else {
             log.info("Поля заполнены неверно");
         }
@@ -56,11 +56,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Film updateFilm(Film film) {
         if (filmValidation.validateFilmFields(film)) {
             if (!films.containsKey(film.getId())) {
-                log.debug("Фильма с таким id не существует");
-                throw new NotFoundException("фильма с таким id не существует");
+                log.debug(String.format("%s %d %s", "Фильм с id", film.getId(), "не найден"));
+                throw new NotFoundException(String.format("%s %d %s", "Фильм с id", film.getId(), "не найден"));
             }
             films.put(film.getId(), film);
-            log.info("Фильм с id: " + film.getId() + " успешно обновлён");
+            log.info(String.format("%s %d %s", "Фильм с id", film.getId(), "успешно обновлён"));
         } else {
             log.info("Поля заполнены неверно");
         }
@@ -79,7 +79,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         if (films.containsKey(filmId)) {
             return films.get(filmId);
         } else {
-            throw new NotFoundException("фильма с таким id не существует");
+            throw new NotFoundException(String.format("%s %d %s", "Фильм с id", filmId, "не найден"));
         }
     }
 
@@ -93,13 +93,13 @@ public class InMemoryFilmStorage implements FilmStorage {
                     if (newSetWithLikes.contains(userId)) {
                         newSetWithLikes.remove(userId);
                     } else {
-                        throw new NotFoundException("Данный пользователь не ставил лайк этому фильму, удаление невозможно");
+                        throw new NotFoundException(String.format("%s %d %s %d", "Пользователь с id", userId, "не ставил лайк фильму с id", filmId));
                     }
-                    log.info("Удален лайк от пользователя");
+                    log.info(String.format("%s %d %s %d", "У фильма с id", filmId, "удалён лайк от пользователя", userId));
                     break;
                 case ("ADD"):
                     newSetWithLikes.add(userId);
-                    log.info("Добавлен лайк от пользователя");
+                    log.info(String.format("%s %d %s %d", "У фильма с id", filmId, "добавлен лайк от пользователя", userId));
                     break;
                 default:
                     break;
@@ -107,7 +107,7 @@ public class InMemoryFilmStorage implements FilmStorage {
             film.setUsersWhoLiked(newSetWithLikes);
             return film;
         } else {
-            throw new NotFoundException("Фильм с таким id не найден");
+            throw new NotFoundException(String.format("%s %d %s", "Фильм с id", userId, "не найден"));
         }
 
     }

@@ -29,7 +29,7 @@ public class InMemoryUserStorage implements UserStorage {
             user.setId(nextId++);
             user.setFriendsIdsSet(new HashSet<>());
             users.put(user.getId(), user);
-            log.info("Добавлен новый пользователь с id: " + user.getId());
+            log.info(String.format("%s %d", "Добавлен новый пользователь с id:", user.getId()));
         } else {
             log.info("Поля заполнены неверно");
         }
@@ -39,11 +39,11 @@ public class InMemoryUserStorage implements UserStorage {
     public User updateUser(User user) {
         if (userValidation.validateUserFields(user)) {
             if (!users.containsKey(user.getId())) {
-                log.debug("Пользователя с таким id не существует");
-                throw new NotFoundException("Пользователя с таким id не существует");
+                log.debug(String.format("%s %d %s", "Пользователь с id:", user.getId(), "не найден"));
+                throw new NotFoundException(String.format("%s %d %s", "Пользователь с id:", user.getId(), "не найден"));
             } else {
                 users.put(user.getId(), user);
-                log.info("Пользователь с id: " + user.getId() + " успешно обновлён");
+                log.info(String.format("%s %d %s", "Пользователь с id:", user.getId(), "успешно обновлён"));
             }
         } else {
             log.info("Поля заполнены неверно");
@@ -55,16 +55,14 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     public List<User> findUsers() {
-        log.info("Количество пользователей: " + users.size());
         return new ArrayList<>(users.values());
     }
 
     public User findUser(long userId) {
         if (users.get(userId) != null) {
-            log.info("Пользователь найден");
             return users.get(userId);
         } else {
-            throw new NotFoundException("Пользователь с таким id не найден");
+            throw new NotFoundException(String.format("%s %d %s", "Пользователь с id:", userId, "не найден"));
         }
     }
 
@@ -78,10 +76,12 @@ public class InMemoryUserStorage implements UserStorage {
                 case "DELETE":
                     firstUserFriendsSet.remove(secondUser.getId());
                     secondUserFriendsSet.remove(firstUser.getId());
+                    log.info(String.format("%s %d %s %d", "Пользователь с id", firstUserId, "удалил из друзей пользователя с id", secondUserId));
                     break;
                 case "ADD":
                     firstUserFriendsSet.add(secondUser.getId());
                     secondUserFriendsSet.add(firstUser.getId());
+                    log.info(String.format("%s %d %s %d", "Пользователь с id", firstUserId, "добавил в друзья пользователя с id", secondUserId));
                     break;
                 default:
                     break;
@@ -90,7 +90,7 @@ public class InMemoryUserStorage implements UserStorage {
             secondUser.setFriendsIdsSet(secondUserFriendsSet);
             return firstUser;
         } else {
-            throw new NotFoundException("Пользователя с таким id не существует");
+            throw new NotFoundException(String.format("%s %d %s %d %s", "Пользователь с id", firstUserId, "или друг с id", secondUserId, "не найден"));
         }
     }
 
@@ -116,7 +116,7 @@ public class InMemoryUserStorage implements UserStorage {
             }
             return mutualFriendsList;
         } else {
-            throw new NotFoundException("Пользователь с таким id не существует");
+            throw new NotFoundException(String.format("%s %d %s %d %s", "Пользователь с id", firstUserId, "или друг с id", secondUserId, "не найден"));
         }
     }
 

@@ -259,62 +259,38 @@ class FilmorateApplicationTests {
 
     private List<User> createTestUsers() {
         List<User> usersList = new ArrayList<>();
-        User firstUser = User.builder()
-                .id(1)
-                .email("testMail4@mail.ru")
-                .login("testLogin4")
-                .name("testName4")
-                .birthday(LocalDate.of(1983, 1, 1))
-                .build();
-        User secondUser = User.builder()
-                .id(2)
-                .email("testMail5@mail.ru")
-                .login("testLogin5")
-                .name("testName5")
-                .birthday(LocalDate.of(1984, 1, 1))
-                .build();
-        User thirdUser = User.builder()
-                .id(3)
-                .email("testMail6@mail.ru")
-                .login("testLogin6")
-                .name("testName6")
-                .birthday(LocalDate.of(1985, 1, 1))
-                .build();
-        usersList.add(firstUser);
-        usersList.add(secondUser);
-        usersList.add(thirdUser);
+        usersList.add(createTestUser(1, "testMail4@mail.ru", "testLogin4", "testName4", 1983));
+        usersList.add(createTestUser(2, "testMail5@mail.ru", "testLogin5", "testName5", 1984));
+        usersList.add(createTestUser(3, "testMail6@mail.ru", "testLogin6", "testName6", 1985));
         return usersList;
+    }
+
+    private User createTestUser(long id, String email, String login, String name, int year) {
+        return User.builder()
+                .id(id)
+                .email(email)
+                .login(login)
+                .name(name)
+                .birthday(LocalDate.of(year, 1, 1))
+                .build();
     }
 
     private List<Film> createTestFilms() {
         List<Film> filmsList = new ArrayList<>();
-        Film firstFilm = Film.builder()
-                .id(1)
-                .name("testName4")
-                .description("testDesc4")
-                .releaseDate(LocalDate.of(1990, 1, 1))
-                .duration(180)
-                .mpa(MPA.builder().id(1).name("G").build())
-                .build();
-        Film secondFilm = Film.builder()
-                .id(2)
-                .name("testName5")
-                .description("testDesc5")
-                .releaseDate(LocalDate.of(1991, 1, 1))
-                .duration(180)
-                .mpa(MPA.builder().id(2).name("PG").build())
-                .build();
-        Film thirdFilm = Film.builder()
-                .id(3)
-                .name("testName6")
-                .description("testDesc6")
-                .releaseDate(LocalDate.of(1992, 1, 1))
-                .duration(180)
-                .mpa(MPA.builder().id(3).name("PG-13").build())
-                .build();
-        filmsList.add(firstFilm);
-        filmsList.add(secondFilm);
-        filmsList.add(thirdFilm);
+        filmsList.add(createTestFilm(1, "testName4", "testDesc4", 1990, 180, 1, "G"));
+        filmsList.add(createTestFilm(2, "testName5", "testDesc5", 1991, 180, 2, "PG"));
+        filmsList.add(createTestFilm(3, "testName6", "testDesc6", 1992, 180, 3, "PG-13"));
         return filmsList;
+    }
+
+    private Film createTestFilm(long id, String name, String desc, int year, int duration, int mpaId, String mpaName) {
+        return Film.builder()
+                .id(id)
+                .name(name)
+                .description(desc)
+                .releaseDate(LocalDate.of(year, 1, 1))
+                .duration(duration)
+                .mpa(MPA.builder().id(mpaId).name(mpaName).build())
+                .build();
     }
 }

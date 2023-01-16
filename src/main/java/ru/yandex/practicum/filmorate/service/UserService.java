@@ -29,6 +29,7 @@ public class UserService {
     }
 
     public User updateUser(User user) {
+        log.info("Запрос на обновление пользователя");
         return userStorage.updateUser(user);
     }
 
@@ -38,23 +39,23 @@ public class UserService {
     }
 
     public User findUser(long userId) {
-        log.info("Запрос на получение информации о пользователе " + userId);
+        log.info(String.format("%s %d", "Запрос на получение информации о пользователе с id", userId));
         return userStorage.findUser(userId);
     }
 
     public User addOrDeleteToFriends(long firstUserId, long secondUserId, String typeOperation) {
-        log.info("Запрос на добавление/удаление из друзей от пользователя " + firstUserId + " пользователя " + secondUserId);
-        log.info("Тип операции " + typeOperation);
+        log.info(String.format("%s %d %s %d", "Запрос на добавление/удаление из друзей от пользователя", firstUserId, "пользователя", secondUserId));
+        log.info(String.format("%s %s", "Тип операции", typeOperation));
         return userStorage.addOrDeleteToFriends(firstUserId, secondUserId, typeOperation);
     }
 
     public List<User> getMutualFriends(long firstUserId, long secondUserId) {
-        log.info("Запрос на получение списка общих друзей у пользователей " + firstUserId + " и " + secondUserId);
+        log.info(String.format("%s %d %s %d", "Запрос на получение списка общих друзей у пользователей", firstUserId, "и", secondUserId));
         return userStorage.getMutualFriends(firstUserId, secondUserId);
     }
 
     public List<User> getFriendsList(long userId) {
-        log.info("Запрос на получение списка друзей у пользователя " + userId);
+        log.info(String.format("%s %d", "Запрос на получение списка друзей у пользователя", userId));
         return userStorage.getFriendsList(userId);
     }
 }

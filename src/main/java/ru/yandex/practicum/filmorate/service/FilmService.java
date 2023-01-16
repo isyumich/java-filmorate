@@ -36,8 +36,8 @@ public class FilmService {
     }
 
     public Film addOrDeleteLikeToFilm(long filmId, long userId, String typeOperation) {
-        log.info("Запрос добавление/удаление лайка к фильму " + filmId);
-        log.info("Тип операции: " + typeOperation);
+        log.info(String.format("%s %d", "Запрос на добавление/удаление лайка к фильму", filmId));
+        log.info(String.format("%s %s", "Тип операции:", typeOperation));
         return filmStorage.addOrDeleteLikeToFilm(filmId, userId, typeOperation);
     }
 
@@ -47,28 +47,32 @@ public class FilmService {
     }
 
     public Film findFilm(long filmId) {
-        log.info("Запрос на получение списка фильмов на получения фильма по id" + filmId);
+        log.info(String.format("%s %d", "Запрос на получение фильма по id", filmId));
         return filmStorage.findFilm(filmId);
     }
 
     public List<Film> findMostPopularFilms(String countFilms) {
-        log.info("Запрос на получение списка из " + countFilms + " самых популярных фильмов");
+        log.info(String.format("%s %s %s", "Запрос на получение списка из", countFilms, "самых популярных фильмов"));
         return filmStorage.findMostPopularFilms(countFilms);
     }
 
     public List<Genre> findAllGenres() {
+        log.info("Запрос на получение списка жанров");
         return filmStorage.findAllGenres();
     }
 
     public Genre findGenre(int genreId) {
+        log.info(String.format("%s %d", "Запрос на получение жанра по id", genreId));
         return filmStorage.findGenre(genreId);
     }
 
     public List<MPA> findAllMPA() {
+        log.info("Запрос на получение списка рейтингов");
         return filmStorage.findAllMPA();
     }
 
     public MPA findMPA(int mpaId) {
+        log.info(String.format("%s %d", "Запрос на получение рейтинга по id", mpaId));
         return filmStorage.findMPA(mpaId);
     }
 }

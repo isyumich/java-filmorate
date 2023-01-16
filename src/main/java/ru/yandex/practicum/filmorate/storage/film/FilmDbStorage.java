@@ -57,6 +57,7 @@ public class FilmDbStorage implements FilmStorage {
             }, keyHolder);
             id = Objects.requireNonNull(keyHolder.getKey()).longValue();
             film.setId(id);
+            log.info(String.format("%s %d", "Добавлен новый фильм с id", film.getId()));
         } else {
             log.info("Поля заполнены неверно");
         }
@@ -80,8 +81,10 @@ public class FilmDbStorage implements FilmStorage {
                     film.getMpa().getId(),
                     film.getId());
             if (countLines == 0) {
-                throw new NotFoundException("Фильм с таким id не найден");
+                log.debug(String.format("%s %d %s", "Фильм с id", film.getId(), "не найден"));
+                throw new NotFoundException(String.format("%s %d %s", "Фильм с id", film.getId(), "не найден"));
             }
+            log.info(String.format("%s %d %s", "Фильм с id", film.getId(), "успешно обновлён"));
         } else {
             log.info("Поля заполнены неверно");
         }
@@ -103,7 +106,7 @@ public class FilmDbStorage implements FilmStorage {
             film = jdbcTemplate.queryForObject("SELECT t1.*, t2.name AS mpa_name FROM films t1 INNER JOIN MPA t2  ON t1.mpa_id = t2.id WHERE t1.id = ?;", new FilmMapper(jdbcTemplate), filmId);
             return film;
         } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException("Фильм с таким id не найден");
+            throw new NotFoundException(String.format("%s %d %s", "Фильм с id", filmId, "не найден"));
         }
     }
 
@@ -115,23 +118,23 @@ public class FilmDbStorage implements FilmStorage {
             film = jdbcTemplate.queryForObject("SELECT t1.*, t2.name AS mpa_name FROM films t1 INNER JOIN MPA t2  ON t1.mpa_id = t2.id WHERE t1.id = ?", new FilmMapper(jdbcTemplate), filmId);
             user = jdbcTemplate.queryForObject("SELECT * from users WHERE id = ?;", new UserMapper(jdbcTemplate), userId);
         } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException("Пользователь или фильм с таким id не найден");
+            throw new NotFoundException(String.format("%s %d %s %d %s", "Пользователь с id", userId, "или фильм с id", filmId, "не найден"));
         }
         switch (typeOperation) {
             case ("DELETE"):
                 int countLinesDelete = jdbcTemplate.update("DELETE FROM film_likes_by_user WHERE film_id = ? and user_id = ?;", filmId, userId);
                 if (countLinesDelete == 0) {
-                    throw new NotFoundException("Пользователь с id " + userId + " не ставил лайк фильму с id " + filmId);
+                    throw new NotFoundException(String.format("%s %d %s %d", "Пользователь с id", userId, "не ставил лайк фильму с id", filmId));
                 }
-                log.info("Удален лайк от пользователя");
+                log.info(String.format("%s %d %s %d", "У фильма с id", filmId, "удалён лайк от пользователя", userId));
                 break;
             case ("ADD"):
                 int countLinesSelect = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM film_likes_by_user where film_id = ? and user_id = ?;", Integer.class, filmId, userId);
                 if (countLinesSelect > 0) {
-                    throw new AlreadyExistValueException("Пользователь с id " + userId + " уже поставил лайк фильму с id " + filmId);
+                    throw new AlreadyExistValueException(String.format("%s %d %s %d", "Пользователь с id", userId, "уже поставил лайк фильму с id", filmId));
                 }
                 jdbcTemplate.update("INSERT INTO film_likes_by_user VALUES (?, ?);", filmId, userId);
-                log.info("Добавлен лайк от пользователя");
+                log.info(String.format("%s %d %s %d", "У фильма с id", filmId, "добавлен лайк от пользователя", userId));
                 break;
             default:
                 break;
@@ -163,7 +166,7 @@ public class FilmDbStorage implements FilmStorage {
             genre = jdbcTemplate.queryForObject("SELECT * FROM genres where id = ?;", new GenreMapper(), genreId);
             return genre;
         } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException("Жанр с таким id не найден");
+            throw new NotFoundException(String.format("%s %d %s", "Фильм с id", genreId, "не найден"));
         }
     }
 
@@ -180,7 +183,7 @@ public class FilmDbStorage implements FilmStorage {
             mpa = jdbcTemplate.queryForObject("SELECT * FROM MPA WHERE id = ?;", new MPAMapper(), mpaId);
             return mpa;
         } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException("Рейтинг с таким id не найден");
+            throw new NotFoundException(String.format("%s %d %s", "Фильм с id", mpaId, "не найден"));
         }
     }
 

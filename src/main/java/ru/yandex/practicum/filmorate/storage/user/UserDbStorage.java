@@ -50,6 +50,7 @@ public class UserDbStorage implements UserStorage {
             }, keyHolder);
             id = Objects.requireNonNull(keyHolder.getKey()).longValue();
             user.setId(id);
+            log.info(String.format("%s %d", "Добавлен новый пользователь с id:", user.getId()));
         } else {
             log.info("Поля заполнены неверно");
         }
@@ -71,8 +72,10 @@ public class UserDbStorage implements UserStorage {
                     user.getBirthday(),
                     user.getId());
             if (countLines == 0) {
-                throw new NotFoundException("Пользователя с таким id не найдено");
+                log.debug(String.format("%s %d %s", "Пользователь с id:", user.getId(), "не найден"));
+                throw new NotFoundException(String.format("%s %d %s", "Пользователь с id:", user.getId(), "не найден"));
             }
+            log.info(String.format("%s %d %s", "Пользователь с id:", user.getId(), "успешно обновлён"));
         } else {
             log.info("Поля заполнены неверно");
         }
@@ -91,7 +94,7 @@ public class UserDbStorage implements UserStorage {
             user = jdbcTemplate.queryForObject("SELECT * FROM users WHERE id = ?;", new UserMapper(jdbcTemplate), userId);
             return user;
         } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException("Пользователь с таким id не существует");
+            throw new NotFoundException(String.format("%s %d %s", "Пользователь с id:", userId, "не найден"));
         }
     }
 
@@ -102,23 +105,23 @@ public class UserDbStorage implements UserStorage {
             firstUser = jdbcTemplate.queryForObject("SELECT * from users WHERE id = ?;", new UserMapper(jdbcTemplate), firstUserId);
             secondUser = jdbcTemplate.queryForObject("SELECT * from users WHERE id = ?;", new UserMapper(jdbcTemplate), secondUserId);
         } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException("Пользователь или друг с таким id не найден");
+            throw new NotFoundException(String.format("%s %d %s %d %s", "Пользователь с id", firstUserId, "или друг с id", secondUserId, "не найден"));
         }
         switch (typeOperation) {
             case "DELETE":
                 int countLinesDelete = jdbcTemplate.update("DELETE FROM friends_list WHERE user_id = ? and friend_id = ?;", firstUserId, secondUserId);
                 if (countLinesDelete == 0) {
-                    throw new NotFoundException("У пользователя с id " + firstUserId + " в друзьях нет пользователя с id " + secondUserId);
+                    throw new NotFoundException(String.format("%s %d %s %d", "У пользователя с id", firstUserId, "в друзьях нет пользователя с id", secondUserId));
                 }
-                log.info("Пользователь с id " + firstUserId + " удалил из друзей пользователя с id " + secondUserId);
+                log.info(String.format("%s %d %s %d", "Пользователь с id", firstUserId, "удалил из друзей пользователя с id", secondUserId));
                 break;
             case "ADD":
                 int countLinesSelect = jdbcTemplate.queryForObject("SELECT COUNT(user_id) FROM friends_list WHERE user_id = ? and friend_id = ?;", Integer.class, firstUserId, secondUserId);
                 if (countLinesSelect > 0) {
-                    throw new AlreadyExistValueException("Пользователь с id " + secondUserId + " уже находится в друзьях у пользователя с id " + firstUserId);
+                    throw new AlreadyExistValueException(String.format("%s %d %s %d", "Пользователь с id", firstUserId, "уже находится в друзьях пользователь с id", secondUserId));
                 }
                 jdbcTemplate.update("INSERT INTO friends_list (user_id, friend_id) VALUES (?, ?);", firstUserId, secondUserId);
-                log.info("Пользователь с id " + firstUserId + " добавил в друзья пользователя с id " + secondUserId);
+                log.info(String.format("%s %d %s %d", "Пользователь с id", firstUserId, "добавил в друзья пользователя с id", secondUserId));
                 break;
             default:
                 break;
