@@ -4,58 +4,75 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class FilmService {
-    public final FilmStorage filmStorage;
+    final FilmStorage filmStorage;
 
     @Autowired
-    public FilmService(FilmStorage filmStorage) {
+    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage) {
         this.filmStorage = filmStorage;
     }
 
-    public Film addOrDeleteLikeToFilm(long filmId, long userId, String typeOperation) {
-        if (filmStorage.getFilms().containsKey(filmId)) {
-            Film film = filmStorage.getFilms().get(filmId);
-            Set<Long> newSetWithLikes = film.getUsersWhoLiked();
-            switch (typeOperation) {
-                case ("DELETE"):
-                    if (newSetWithLikes.contains(userId)) {
-                        newSetWithLikes.remove(userId);
-                    } else {
-                        throw new NotFoundException("Данный пользователь не ставил лайк этому фильму, удаление невозможно");
-                    }
-                    log.info("Удален лайк от пользователя");
-                    break;
-                case ("ADD"):
-                    newSetWithLikes.add(userId);
-                    log.info("Добавлен лайк от пользователя");
-                    break;
-                default:
-                    break;
-            }
-            film.setUsersWhoLiked(newSetWithLikes);
-            return film;
-        } else {
-            throw new NotFoundException("Фильм с таким id не найден");
-        }
+    public Film addNewFilm(Film film) {
+        log.info("Запрос на добавление нового фильма");
+        return filmStorage.addNewFilm(film);
+    }
 
+    public Film updateFilm(Film film) {
+        log.info("Запрос на обновление данных фильма");
+        return filmStorage.updateFilm(film);
+    }
+
+    public Film addOrDeleteLikeToFilm(long filmId, long userId, String typeOperation) {
+        log.info(String.format("%s %d", "Запрос на добавление/удаление лайка к фильму", filmId));
+        log.info(String.format("%s %s", "Тип операции:", typeOperation));
+        return filmStorage.addOrDeleteLikeToFilm(filmId, userId, typeOperation);
+    }
+
+    public Collection<Film> findFilms() {
+        log.info("Запрос на получение списка фильмов");
+        return filmStorage.findFilms();
+    }
+
+    public Film findFilm(long filmId) {
+        log.info(String.format("%s %d", "Запрос на получение фильма по id", filmId));
+        return filmStorage.findFilm(filmId);
     }
 
     public List<Film> findMostPopularFilms(String countFilms) {
-        return filmStorage.findFilms().stream()
-                .sorted((o1, o2) -> (int) (o2.getCountLikes() - o1.getCountLikes()))
-                .limit(Long.parseLong(countFilms))
-                .collect(Collectors.toList());
+        log.info(String.format("%s %s %s", "Запрос на получение списка из", countFilms, "самых популярных фильмов"));
+        return filmStorage.findMostPopularFilms(countFilms);
+    }
+
+    public List<Genre> findAllGenres() {
+        log.info("Запрос на получение списка жанров");
+        return filmStorage.findAllGenres();
+    }
+
+    public Genre findGenre(int genreId) {
+        log.info(String.format("%s %d", "Запрос на получение жанра по id", genreId));
+        return filmStorage.findGenre(genreId);
+    }
+
+    public List<MPA> findAllMPA() {
+        log.info("Запрос на получение списка рейтингов");
+        return filmStorage.findAllMPA();
+    }
+
+    public MPA findMPA(int mpaId) {
+        log.info(String.format("%s %d", "Запрос на получение рейтинга по id", mpaId));
+        return filmStorage.findMPA(mpaId);
     }
 }

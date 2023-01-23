@@ -9,7 +9,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.TypeOperations;
 import ru.yandex.practicum.filmorate.service.UserService;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -27,48 +27,44 @@ public class UserController {
 
     @PostMapping
     User addNewUser(@RequestBody User user) {
-        log.info("Получен запрос POST на добавление пользователя");
-        return userService.userStorage.addNewUser(user);
+        return userService.addNewUser(user);
     }
 
 
     @DeleteMapping(pathForAddOrDeleteFriends)
     User deleteFromFriend(@PathVariable("id") long firstUserId, @PathVariable("friendId") long secondUserId) {
-        log.info("Получен запрос DELETE на удаление из друзей у пользователя " + firstUserId + " пользователя " + secondUserId);
         return userService.addOrDeleteToFriends(firstUserId, secondUserId, TypeOperations.DELETE.toString());
     }
 
 
     @PutMapping
     User updateUser(@RequestBody User user) {
-        return userService.userStorage.updateUser(user);
+        return userService.updateUser(user);
     }
 
     @PutMapping(pathForAddOrDeleteFriends)
     User addToFriend(@PathVariable("id") long firstUserId, @PathVariable("friendId") long secondUserId) {
-        log.info("Получен запрос PUT на добавление в друзья от пользователя " + firstUserId + " пользователя " + secondUserId);
         return userService.addOrDeleteToFriends(firstUserId, secondUserId, TypeOperations.ADD.toString());
     }
 
 
     @GetMapping
-    Collection<User> findUsers() {
-        log.info("Получен запрос GET на получение информации обо всех пользователях");
-        return userService.userStorage.findUsers();
+    List<User> findUsers() {
+        return new ArrayList<>(userService.findUsers());
     }
+
     @GetMapping("/{id}")
     User findUser(@PathVariable("id") long userId) {
-        log.info("Получен запрос GET на получение информации о пользователе " + userId);
-        return userService.userStorage.findUser(userId);
+        return userService.findUser(userId);
     }
+
     @GetMapping("/{id}/friends/common/{otherId}")
     List<User> getMutualFriends(@PathVariable("id") long firstUserId, @PathVariable("otherId") long secondUserId) {
-        log.info("Получен запрос GET на получение списка общих друзей у пользователей " + firstUserId + " и " + secondUserId);
         return userService.getMutualFriends(firstUserId, secondUserId);
     }
+
     @GetMapping("/{id}/friends")
-    List<User> getFriendsSet(@PathVariable("id") long userId) {
-        log.info("Получен запрос GET на получение списка друзей у пользователя " + userId);
-        return userService.getFriendsSet(userId);
+    List<User> getFriendsList(@PathVariable("id") long userId) {
+        return userService.getFriendsList(userId);
     }
 }
