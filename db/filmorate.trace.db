@@ -5264,3 +5264,7 @@ Column "mpa_name" not found [42122-214]
 	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
 	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61)
 	at java.base/java.lang.Thread.run(Thread.java:1589)
+2023-01-24 23:14:11 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Синтаксическая ошибка в выражении SQL "CREATE TABLE IF NOT EXISTS films_reviews_like( review_id INTEGER REFERENCES film_reviews(id), user_id INTEGER REFERENCES users(id), review_like_count INTEGER, [*])"; ожидалось "identifier"
+Syntax error in SQL statement "CREATE TABLE IF NOT EXISTS films_reviews_like( review_id INTEGER REFERENCES film_reviews(id), user_id INTEGER REFERENCES users(id), review_like_count INTEGER, [*])"; expected "identifier"; SQL statement:
+CREATE TABLE IF NOT EXISTS films_reviews_like( review_id INTEGER REFERENCES film_reviews(id), user_id INTEGER REFERENCES users(id), review_like_count INTEGER, ) [42001-214]
