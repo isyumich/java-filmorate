@@ -30,6 +30,8 @@ public class ReviewDBService {
         if(reviewSet.next()){
             review.setReviewId(reviewSet.getInt("id"));
             log.info("Film has been created, ID: {}", review.getReviewId());
+        } else {
+            throw new NotFoundException("Review not found");
         }
         return review;
     }
@@ -74,7 +76,6 @@ public class ReviewDBService {
     public void removeReviewById(int id) {
         SqlRowSet reviewSet = jdbcTemplate.queryForRowSet("SELECT * FROM film_reviews WHERE id = ?", id);
         if(reviewSet.next()) {
-            System.out.println("FLAG-- " + id);
             jdbcTemplate.update("DELETE FROM films_reviews_like WHERE review_id = ?", id);
             jdbcTemplate.update("DELETE FROM film_reviews WHERE id = ?", id);
         } else {
@@ -109,6 +110,5 @@ public class ReviewDBService {
         String sql = "UPDATE film_reviews SET useful = (SELECT SUM(review_like_count) FROM films_reviews_like WHERE review_id = ?) WHERE id = ?";
         jdbcTemplate.update(sql, review_id, review_id);
     }
-
 
 }
