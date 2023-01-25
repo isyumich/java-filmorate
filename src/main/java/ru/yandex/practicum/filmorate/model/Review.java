@@ -8,12 +8,16 @@ import lombok.experimental.PackagePrivate;
 public class Review {
     int reviewId;
     String content;
-    boolean isPositive;
-    int userId;
-    int filmId;
+    Boolean isPositive;
+    Integer userId;
+    Integer filmId;
     int useful;
 
-    public boolean getIsPositive() {
+    public Boolean getIsPositive() {
         return isPositive;
+    }
+
+    public void setPositive(boolean is_positive) {
+        isPositive = is_positive;
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Review;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -24,14 +25,13 @@ public class ReviewDBService {
     }
 
     public Review addReview(Review review) {
-        review.setUseful(0);
+        reviewValidation(review);
+        //review.setUseful(0);
         jdbcTemplate.update("INSERT INTO film_reviews (content, is_positive, user_id, film_id, useful) VALUES (?, ?, ?, ?, ?)", review.getContent(), review.getIsPositive(), review.getUserId(), review.getFilmId(), review.getUseful());
         SqlRowSet reviewSet = jdbcTemplate.queryForRowSet("SELECT * FROM film_reviews WHERE user_id = ? AND film_id = ?", review.getUserId(), review.getFilmId());
         if(reviewSet.next()){
             review.setReviewId(reviewSet.getInt("id"));
             log.info("Film has been created, ID: {}", review.getReviewId());
-        } else {
-            throw new NotFoundException("Review not found");
         }
         return review;
     }
@@ -60,12 +60,11 @@ public class ReviewDBService {
     public Review updateReview(Review review) {
         SqlRowSet reviewSet = jdbcTemplate.queryForRowSet("SELECT * FROM film_reviews WHERE id = ?", review.getReviewId());
         if(reviewSet.next()) {
-            String sql = "MERGE INTO film_reviews (id, content, is_positive, user_id, film_id, useful) VALUES (?, ?, ?, ?, ?, ?)";
-            jdbcTemplate.update(sql, review.getReviewId(), review.getContent(), review.getIsPositive(), review.getUserId(), review.getFilmId(), review.getUseful());
+            jdbcTemplate.update("MERGE INTO film_reviews (id, content, is_positive) KEY (id) VALUES (?, ?, ?)",review.getReviewId(), review.getContent(), review.getIsPositive());
         } else {
             throw new NotFoundException("Review not found");
         }
-        return review;
+        return findReviewById(review.getReviewId());
     }
 
     public void updateStatus(int id, int userId, int value) {
@@ -109,6 +108,14 @@ public class ReviewDBService {
     void usefulUpdate(int review_id) {
         String sql = "UPDATE film_reviews SET useful = (SELECT SUM(review_like_count) FROM films_reviews_like WHERE review_id = ?) WHERE id = ?";
         jdbcTemplate.update(sql, review_id, review_id);
+    }
+
+    void reviewValidation(Review review) {
+        if (review.getUserId() < 0 || review.getFilmId() < 0){
+            throw new NotFoundException("Not found");
+        } else if (review.getContent() == null || review.getIsPositive() == null || review.getUserId() == null || review.getFilmId() == null) {
+            throw new ValidationException("Validation Exception");
+        }
     }
 
 }
