@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.PackagePrivate;
 
@@ -14,11 +13,4 @@ public class Review {
     Integer filmId;
     int useful;
 
-    public Boolean getIsPositive() {
-        return isPositive;
-    }
-
-    public void setPositive(boolean is_positive) {
-        isPositive = is_positive;
-    }
 }

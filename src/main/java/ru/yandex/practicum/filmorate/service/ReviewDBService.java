@@ -1,8 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.Data;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
@@ -15,9 +14,8 @@ import java.util.List;
 
 @Data
 @Repository
+@Slf4j
 public class ReviewDBService {
-
-    private static final Logger log = LoggerFactory.getLogger(ReviewDBService.class);
 
     private final JdbcTemplate jdbcTemplate;
     public ReviewDBService(JdbcTemplate jdbcTemplate){
@@ -95,7 +93,7 @@ public class ReviewDBService {
         Review review = new Review();
         review.setReviewId(reviewSet.getInt("id"));
         review.setContent(reviewSet.getString("content"));
-        review.setPositive(reviewSet.getBoolean("is_positive"));
+        review.setIsPositive(reviewSet.getBoolean("is_positive"));
         review.setUserId(reviewSet.getInt("user_id"));
         review.setFilmId(reviewSet.getInt("film_id"));
         review.setUseful(reviewSet.getInt("useful"));
