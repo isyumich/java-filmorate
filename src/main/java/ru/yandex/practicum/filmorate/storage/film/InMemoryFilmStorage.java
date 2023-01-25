@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MPA;
+import ru.yandex.practicum.filmorate.storage.film.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.validation.FilmValidation;
 
 import java.util.*;
@@ -150,5 +151,24 @@ public class InMemoryFilmStorage implements FilmStorage {
         if (film.getGenres() == null) {
             film.setGenres(new ArrayList<>());
         }
+    }
+    @Override
+    public List<Film> searchFilmByDirector(String query, List<String> values) {
+         return films.values().stream()
+                .collect(Collectors.toList()); //TODO
+    }
+
+
+    @Override
+    public List<Film> searchFilmByTitle(String query, List<String> values) {
+        return films.values().stream()
+                .collect(Collectors.toList()); //TODO
+    }
+
+
+    @Override
+    public List<Film> searchFilmByTitleAndDirector(String query, List<String> values) {
+        return films.values().stream()
+                .collect(Collectors.toList()); //TODO
     }
 }

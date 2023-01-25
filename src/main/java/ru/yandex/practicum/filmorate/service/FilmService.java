@@ -75,4 +75,19 @@ public class FilmService {
         log.info(String.format("%s %d", "Запрос на получение рейтинга по id", mpaId));
         return filmStorage.findMPA(mpaId);
     }
+    public List<Film> searchFilmByDirector(String query, List<String> values) {
+        log.info("Поиск фильмов по режиссеру");
+        return filmStorage.searchFilmByDirector(query, values);
+    }
+
+    public List<Film> searchFilmByTitle(String query, List<String> values) {
+        log.info("Поиск фильмов по названию");
+        return filmStorage.searchFilmByTitle(query, values);
+    }
+
+    public List<Film> searchFilmByTitleAndDirector(String query, List<String> values) {
+        log.info("Поиск фильмов по названию и режиссеру");
+        return filmStorage.searchFilmByTitleAndDirector(query,values);
+    }
+
 }

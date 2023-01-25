@@ -27,4 +27,7 @@ public interface FilmStorage {
 
     MPA findMPA(int mpaId);
 
+    List<Film> searchFilmByDirector(String query, List<String> values);
+    List<Film> searchFilmByTitle(String query, List<String> values);
+    List<Film> searchFilmByTitleAndDirector(String query, List<String> values);
 }
