@@ -26,7 +26,6 @@ public class ReviewDBService {
 
     public Review addReview(Review review) {
         reviewValidation(review);
-        //review.setUseful(0);
         jdbcTemplate.update("INSERT INTO film_reviews (content, is_positive, user_id, film_id, useful) VALUES (?, ?, ?, ?, ?)", review.getContent(), review.getIsPositive(), review.getUserId(), review.getFilmId(), review.getUseful());
         SqlRowSet reviewSet = jdbcTemplate.queryForRowSet("SELECT * FROM film_reviews WHERE user_id = ? AND film_id = ?", review.getUserId(), review.getFilmId());
         if(reviewSet.next()){
@@ -58,8 +57,7 @@ public class ReviewDBService {
     }
 
     public Review updateReview(Review review) {
-        SqlRowSet reviewSet = jdbcTemplate.queryForRowSet("SELECT * FROM film_reviews WHERE id = ?", review.getReviewId());
-        if(reviewSet.next()) {
+        if(jdbcTemplate.queryForRowSet("SELECT * FROM film_reviews WHERE id = ?", review.getReviewId()).next()) {
             jdbcTemplate.update("MERGE INTO film_reviews (id, content, is_positive) KEY (id) VALUES (?, ?, ?)",review.getReviewId(), review.getContent(), review.getIsPositive());
         } else {
             throw new NotFoundException("Review not found");
@@ -73,8 +71,7 @@ public class ReviewDBService {
     }
 
     public void removeReviewById(int id) {
-        SqlRowSet reviewSet = jdbcTemplate.queryForRowSet("SELECT * FROM film_reviews WHERE id = ?", id);
-        if(reviewSet.next()) {
+        if(jdbcTemplate.queryForRowSet("SELECT * FROM film_reviews WHERE id = ?", id).next()) {
             jdbcTemplate.update("DELETE FROM films_reviews_like WHERE review_id = ?", id);
             jdbcTemplate.update("DELETE FROM film_reviews WHERE id = ?", id);
         } else {
@@ -111,10 +108,22 @@ public class ReviewDBService {
     }
 
     void reviewValidation(Review review) {
-        if (review.getUserId() < 0 || review.getFilmId() < 0){
-            throw new NotFoundException("Not found");
-        } else if (review.getContent() == null || review.getIsPositive() == null || review.getUserId() == null || review.getFilmId() == null) {
+        userExistCheckUp(review.getUserId());
+        filmExistCheckUp(review.getFilmId());
+         if (review.getContent() == null || review.getIsPositive() == null || review.getUserId() == null || review.getFilmId() == null) {
             throw new ValidationException("Validation Exception");
+        }
+    }
+
+    void userExistCheckUp(int userId){
+        if(!jdbcTemplate.queryForRowSet("SELECT * FROM users WHERE id = ?", userId).next()) {
+            throw new NotFoundException("Review not found");
+        }
+    }
+
+    void filmExistCheckUp(int filmId){
+        if(!jdbcTemplate.queryForRowSet("SELECT * FROM films WHERE id = ?", filmId).next()) {
+            throw new NotFoundException("Review not found");
         }
     }
 
