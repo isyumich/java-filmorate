@@ -4,10 +4,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.Assertions;
-<<<<<<< HEAD
-import org.junit.jupiter.api.BeforeAll;
-=======
->>>>>>> b3fb9d13b2084c492c7c69a7cd6224892e53a256
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -242,11 +238,7 @@ class FilmorateApplicationTests {
         assertEquals(filmDbStorage.findMostPopularFilms("10"), mostPopularFilms);
     }
 
-<<<<<<< HEAD
-    /*
-=======
     // %%%%%%%%%% Russian text
->>>>>>> b3fb9d13b2084c492c7c69a7cd6224892e53a256
     @Test
     @Sql(value = {"test-schema.sql", "test-data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     public void findAllGenres() {
@@ -258,11 +250,6 @@ class FilmorateApplicationTests {
     public void findGenre() {
         assertEquals(Genre.builder().id(1).name("Комедия").build(), filmDbStorage.findGenre(1));
     }
-<<<<<<< HEAD
-    */
-=======
-    // %%%%%%%%%% Russian text ends
->>>>>>> b3fb9d13b2084c492c7c69a7cd6224892e53a256
 
     @Test
     @Sql(value = {"test-schema.sql", "test-data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
@@ -313,13 +300,8 @@ class FilmorateApplicationTests {
                 .build();
     }
 
-<<<<<<< HEAD
-    // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% Review Tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
-    // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% Review Tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
-=======
     // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-reviews tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
     // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-reviews tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
->>>>>>> b3fb9d13b2084c492c7c69a7cd6224892e53a256
 
     private Review createReview (String content, Boolean isPositive, Integer userId, Integer filmId){
         Review review = new Review();
@@ -405,10 +387,6 @@ class FilmorateApplicationTests {
         Assertions.assertEquals(review2.getUseful(), 1);
     }
 
-<<<<<<< HEAD
-    // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% Review Tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
-    // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% Review Tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
-=======
     // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-reviews tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
     // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-reviews tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
 
@@ -492,5 +470,5 @@ class FilmorateApplicationTests {
 
     // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-director tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
     // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-director tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
->>>>>>> b3fb9d13b2084c492c7c69a7cd6224892e53a256
+
 }
