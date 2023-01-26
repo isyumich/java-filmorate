@@ -215,14 +215,14 @@ public class FilmDbStorage implements FilmStorage {
             director = jdbcTemplate.queryForObject("SELECT * FROM directors WHERE id = ?", new DirectorMapper(),  id);
             return director;
         } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException(String.format("%s %d %s", "Фильм с id", id, "не найден"));
+            throw new NotFoundException(String.format("%s %d %s", "Director с id", id, "не найден"));
         }
     }
 
     @Override
     public Director createDirector(Director director) {
         if (director.getName().isEmpty() || director.getName() == null || Objects.equals(director.getName(), " ")){
-            throw new ValidationException("Неверный формат имени");
+            throw new ValidationException("Bad name format");
         }
         String sql = "INSERT INTO directors (name) VALUES (?);";
         KeyHolder keyHolder = new GeneratedKeyHolder();

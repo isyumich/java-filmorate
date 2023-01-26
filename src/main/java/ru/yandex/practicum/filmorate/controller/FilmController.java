@@ -31,7 +31,6 @@ public class FilmController {
         this.filmService = filmService;
     }
 
-
     @PostMapping(pathForFilms)
     Film addNewFilm(@RequestBody Film film) {
         return filmService.addNewFilm(film);
