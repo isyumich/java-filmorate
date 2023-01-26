@@ -5,6 +5,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MPA;
@@ -23,6 +24,7 @@ public class FilmController {
     final String pathForFilms = "/films";
     final String pathForGenres = "/genres";
     final String pathForMPA = "/mpa";
+    final String pathForDirector = "/directors";
 
     @Autowired
     public FilmController(FilmService filmService) {
@@ -34,7 +36,6 @@ public class FilmController {
     Film addNewFilm(@RequestBody Film film) {
         return filmService.addNewFilm(film);
     }
-
 
     @DeleteMapping(pathForFilms + pathForFilmLike)
     Film deleteLikeFromFilm(@PathVariable("id") long filmId, @PathVariable("userId") Long userId) {
@@ -87,4 +88,39 @@ public class FilmController {
     MPA findMPA(@PathVariable("id") int MPAId) {
         return filmService.findMPA(MPAId);
     }
+
+    // Start of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's end points %%%%%%%%% %%%%%%%%% %%%%%%%%%
+    @GetMapping(pathForFilms + "/director/{directorId}")
+    List<Film> getDirectorSortedFilms(@PathVariable("directorId") int id, @RequestParam(name = "sortBy") String param) {
+        System.out.println("FLAG-00- ID-- " + id);
+        return filmService.getDirectorSortedFilms(id, param);
+    }
+
+    @GetMapping(pathForDirector)
+    List<Director> getAllDirectors() {
+        return filmService.getAllDirectors();
+    }
+
+    @GetMapping(pathForDirector + "/{id}")
+    Director getDirectorById(@PathVariable("id") int id) {
+        return filmService.getDirectorById(id);
+    }
+
+    @PostMapping(pathForDirector)
+    Director createDirector(@RequestBody Director director) {
+        return filmService.createDirector(director);
+    }
+
+    @PutMapping(pathForDirector)
+    Director updateDirector(@RequestBody Director director) {
+        return filmService.updateDirector(director);
+    }
+
+    @DeleteMapping(pathForDirector + "/{id}")
+    Director deleteDirector(@PathVariable("id") int id) {
+        return filmService.deleteDirector(id);
+    }
+
+    // End of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's end points %%%%%%%%% %%%%%%%%% %%%%%%%%%
+
 }
