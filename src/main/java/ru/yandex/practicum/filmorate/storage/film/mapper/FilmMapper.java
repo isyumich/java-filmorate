@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.film.mapper;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MPA;
@@ -32,6 +33,7 @@ public class FilmMapper implements RowMapper<Film> {
                 .build();
         setLikesSet(film);
         setGenresList(film);
+        setDirectorList(film);
         return film;
     }
 
@@ -44,4 +46,10 @@ public class FilmMapper implements RowMapper<Film> {
         List<Genre> genreList = new ArrayList<>(jdbcTemplate.query("SELECT * FROM genres WHERE id IN (SELECT genre_id FROM film_genre WHERE film_id = ?);", new GenreMapper(), film.getId()));
         film.setGenres(genreList);
     }
+
+    private void setDirectorList(Film film) {
+        List<Director> genreList = new ArrayList<>(jdbcTemplate.query("SELECT * FROM directors WHERE id IN (SELECT director_id FROM directors_films WHERE film_id = ?);", new DirectorMapper(), film.getId()));
+        film.setDirectors(genreList);
+    }
+
 }

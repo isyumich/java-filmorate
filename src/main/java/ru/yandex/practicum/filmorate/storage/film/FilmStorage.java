@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MPA;
@@ -26,5 +27,20 @@ public interface FilmStorage {
     List<MPA> findAllMPA();
 
     MPA findMPA(int mpaId);
+
+    // Start of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's funcs %%%%%%%%% %%%%%%%%% %%%%%%%%%
+    List<Film> getDirectorSortedFilms(int id, String param);
+
+    List<Director> getAllDirectors();
+
+    Director getDirectorById(int id);
+
+    Director createDirector(Director director);
+
+    Director updateDirector(Director director);
+
+    Director deleteDirector(int id);
+
+    // End of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's services %%%%%%%%% %%%%%%%%% %%%%%%%%%
 
 }

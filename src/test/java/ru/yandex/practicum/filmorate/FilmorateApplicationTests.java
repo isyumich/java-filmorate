@@ -4,7 +4,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -239,7 +238,7 @@ class FilmorateApplicationTests {
         assertEquals(filmDbStorage.findMostPopularFilms("10"), mostPopularFilms);
     }
 
-    /*
+    // %%%%%%%%%% Russian text
     @Test
     @Sql(value = {"test-schema.sql", "test-data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     public void findAllGenres() {
@@ -251,7 +250,7 @@ class FilmorateApplicationTests {
     public void findGenre() {
         assertEquals(Genre.builder().id(1).name("Комедия").build(), filmDbStorage.findGenre(1));
     }
-    */
+    // %%%%%%%%%% Russian text ends
 
     @Test
     @Sql(value = {"test-schema.sql", "test-data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
@@ -302,8 +301,8 @@ class FilmorateApplicationTests {
                 .build();
     }
 
-    // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% Review Tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
-    // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% Review Tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+    // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-reviews tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+    // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-reviews tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
 
     private Review createReview (String content, Boolean isPositive, Integer userId, Integer filmId){
         Review review = new Review();
@@ -389,6 +388,87 @@ class FilmorateApplicationTests {
         Assertions.assertEquals(review2.getUseful(), 1);
     }
 
-    // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% Review Tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
-    // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% Review Tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+    // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-reviews tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+    // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-reviews tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+
+    // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-director tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+    // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-director tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+    public void createTestDirectors() {
+        filmDbStorage.createDirector(createTestDirector(1, "Director Name1"));
+        filmDbStorage.createDirector(createTestDirector(2, "Director Name2"));
+        filmDbStorage.createDirector(createTestDirector(3, "Director Name3"));
+    }
+
+    private Director createTestDirector(int id, String name) {
+        return Director.builder()
+                .id(id)
+                .name(name)
+                .build();
+    }
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void getDirectorByIdTest() {
+        createTestDirectors();
+        Director director = filmDbStorage.getDirectorById(2);
+        Assertions.assertEquals(director.getId(), 2);
+        Assertions.assertEquals(director.getName(), "Director Name2");
+    }
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void getAllDirectorsTest() {
+        createTestDirectors();
+        List<Director> directors = filmDbStorage.getAllDirectors();
+        Assertions.assertEquals(directors.get(0).getId(), 1);
+        Assertions.assertEquals(directors.get(0).getName(), "Director Name1");
+        Assertions.assertEquals(directors.get(1).getId(), 2);
+        Assertions.assertEquals(directors.get(1).getName(), "Director Name2");
+        Assertions.assertEquals(directors.get(2).getId(), 3);
+        Assertions.assertEquals(directors.get(2).getName(), "Director Name3");
+    }
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void updateFilmAndGetDirectorSortedFilmsTest() {
+        createTestDirectors();
+        for (Film film : filmDbStorage.findFilms()){
+            List<Director> directorList = new ArrayList<>();
+            directorList.add(filmDbStorage.getDirectorById(1));
+            film.setDirectors(directorList);
+            filmDbStorage.updateFilm(film);
+        }
+        List<Film> films = filmDbStorage.getDirectorSortedFilms(1, "year");
+        Assertions.assertEquals(films.size(), 3);
+        Assertions.assertEquals(films.get(0).getId(), 1);
+        Assertions.assertEquals(films.get(1).getId(), 2);
+        Assertions.assertEquals(films.get(2).getId(), 3);
+    }
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void updateDirectorTest() {
+        createTestDirectors();
+        Director director = filmDbStorage.getDirectorById(1);
+        Assertions.assertEquals(director.getId(), 1);
+        Assertions.assertEquals(director.getName(), "Director Name1");
+        Director updDirector = createTestDirector(1, "Director Name1 Updated");
+        filmDbStorage.updateDirector(updDirector);
+        director = filmDbStorage.getDirectorById(1);
+        Assertions.assertEquals(director.getId(), 1);
+        Assertions.assertEquals(director.getName(), "Director Name1 Updated");
+    }
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void removeDirectorTest() {
+        createTestDirectors();
+        filmDbStorage.deleteDirector(3);
+        Assertions.assertEquals(filmDbStorage.getAllDirectors().size(), 2);
+        Throwable exception = assertThrows(NotFoundException.class, () -> filmDbStorage.getDirectorById(3));
+        assertEquals("Director с id 3 не найден", exception.getMessage());
+    }
+
+    // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-director tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+    // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-director tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
 }
