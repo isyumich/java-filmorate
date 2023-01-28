@@ -63,6 +63,7 @@ public class FilmDbStorage implements FilmStorage {
         }
         checkLikesSet(film);
         checkGenresList(film);
+        checkDirectorList(film);
         return film;
     }
 
@@ -90,6 +91,7 @@ public class FilmDbStorage implements FilmStorage {
         }
         checkLikesSet(film);
         checkGenresList(film);
+        checkDirectorList(film);
         return film;
     }
 
@@ -187,7 +189,75 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
+    // Start of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's funcs %%%%%%%%% %%%%%%%%% %%%%%%%%%
+    @Override
+    public List<Film> getDirectorSortedFilms(int id, String param) {
+        directorExistCheckUp(id);
+        if (Objects.equals(param, "year")){
+            String sql = "SELECT t1.*, t2.name AS mpa_name FROM films t1 INNER JOIN MPA t2 ON t1.mpa_id = t2.id WHERE t1.id IN (SELECT film_id FROM directors_films WHERE director_id = ?) ORDER BY EXTRACT(YEAR FROM CAST(release_date AS date));";
+            return jdbcTemplate.query(sql, new FilmMapper(jdbcTemplate), id);
+        } else if (Objects.equals(param, "likes")) {
+            String sql = "SELECT t1.*, t3.name AS mpa_name FROM films t1 LEFT JOIN film_likes_by_user t2 ON t1.id = t2.film_id INNER JOIN MPA t3 ON t1.mpa_id = t3.id WHERE t1.id IN (SELECT film_id FROM directors_films WHERE director_id = ?) GROUP BY t1.id ORDER BY COUNT(user_id) DESC";
+            return jdbcTemplate.query(sql, new FilmMapper(jdbcTemplate), id);
+        } else {
+            throw new ValidationException("Неверный формат переданного параметра");
+        }
+    }
 
+    @Override
+    public List<Director> getAllDirectors() {
+        return jdbcTemplate.query("SELECT * FROM directors;", new DirectorMapper());
+    }
+
+    @Override
+    public Director getDirectorById(int id) {
+        Director director;
+        try {
+            director = jdbcTemplate.queryForObject("SELECT * FROM directors WHERE id = ?", new DirectorMapper(),  id);
+            return director;
+        } catch (EmptyResultDataAccessException e) {
+            throw new NotFoundException(String.format("%s %d %s", "Director с id", id, "не найден"));
+        }
+    }
+
+    @Override
+    public Director createDirector(Director director) {
+        if (director.getName().isEmpty() || director.getName() == null || Objects.equals(director.getName(), " ")){
+            throw new ValidationException("Bad name format");
+        }
+        String sql = "INSERT INTO directors (name) VALUES (?);";
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbcTemplate.update(connection -> {
+            PreparedStatement stmt = connection.prepareStatement(sql, new String[]{"id"});
+            stmt.setString(1, director.getName());
+            return stmt;
+        }, keyHolder);
+        int id = Objects.requireNonNull(keyHolder.getKey()).intValue();
+        director.setId(id);
+        log.info(String.format("%s %d", "Добавлен новый режиссер с id", director.getId()));
+        return director;
+    }
+
+    @Override
+    public Director updateDirector(Director director) {
+        int countLines = jdbcTemplate.update("UPDATE directors SET name = ? WHERE id = ?", director.getName(), director.getId());
+        if (countLines == 0) {
+            log.debug(String.format("%s %d %s", "Режиссер с id", director.getId(), "не найден"));
+            throw new NotFoundException(String.format("%s %d %s", "Режиссер с id", director.getId(), "не найден"));
+        }
+        log.info(String.format("%s %d %s", "Режиссер с id", director.getId(), "успешно обновлён"));
+        return director;
+    }
+
+    @Override
+    public Director deleteDirector(int id) {
+        Director director = getDirectorById(id);
+        jdbcTemplate.update("DELETE FROM directors_films WHERE director_id = ?", id);
+        jdbcTemplate.update("DELETE FROM directors WHERE id = ?", id);
+        log.info(String.format("%s %d %s", "Режиссер с id ", id, " успешно удален"));
+        return director;
+    }
+    // End of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's funcs %%%%%%%%% %%%%%%%%% %%%%%%%%%
 
     private void checkLikesSet(Film film) {
         if (film.getUsersWhoLiked() == null) {
@@ -211,6 +281,32 @@ public class FilmDbStorage implements FilmStorage {
             film.setGenres(newList);
         }
     }
+
+    // %%%%%%%%% %%%%%%%%% %%%%%%%%% Director funcs checkDirectorList %%%%%%%%% %%%%%%%%% %%%%%%%%%
+    private void checkDirectorList(Film film) {
+        if (film.getDirectors() == null) {
+            film.setDirectors(new ArrayList<>());
+            jdbcTemplate.update("DELETE FROM directors_films WHERE film_id = ?;", film.getId());
+        } else {
+            List<Director> listDirector = film.getDirectors();
+            List<Director> newList = new ArrayList<>();
+            jdbcTemplate.update("DELETE FROM directors_films WHERE film_id = ?;", film.getId());
+            for (Director director : listDirector) {
+                if (!newList.contains(director)) {
+                    newList.add(director);
+                    jdbcTemplate.update("INSERT INTO directors_films VALUES (?, ?);", film.getId(), director.getId());
+                }
+            }
+            film.setDirectors(newList);
+        }
+    }
+
+    void directorExistCheckUp(int id){
+        if(!jdbcTemplate.queryForRowSet("SELECT * FROM directors WHERE id = ?", id).next()) {
+            throw new NotFoundException("Director not found");
+        }
+    }
+
 
 
     @Override
