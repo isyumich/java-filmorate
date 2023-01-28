@@ -113,7 +113,6 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     }
 
-    @Override
     public List<Film> findMostPopularFilms(String countFilms) {
         return findFilms().stream()
                 .sorted((o1, o2) -> (int) (o2.getCountLikes() - o1.getCountLikes()))
@@ -142,19 +141,10 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> findMostPopularFilmsByGenreAndYear(String limit, String genreId, String year) {
+    public List<Film> findMostPopularFilms(String limit, String genreId, String year) {
         return null;
     }
 
-    @Override
-    public List<Film> findMostPopularFilmsByGenre(String limit, String genreId) {
-        return null;
-    }
-
-    @Override
-    public List<Film> findMostPopularFilmsByYear(String limit, String year) {
-        return null;
-    }
 
 
     private void setEmptyLikesSet(Film film) {

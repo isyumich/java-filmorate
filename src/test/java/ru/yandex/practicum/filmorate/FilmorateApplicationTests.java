@@ -22,8 +22,7 @@ import java.time.LocalDate;
 import java.util.*;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
@@ -227,16 +226,6 @@ class FilmorateApplicationTests {
         assertEquals(film.getUsersWhoLiked(), new HashSet<>());
     }
 
-    @Test
-    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    public void findMostPopularFilms() {
-        filmDbStorage.addOrDeleteLikeToFilm(2, 1, TypeOperations.ADD.toString());
-        filmDbStorage.addOrDeleteLikeToFilm(2, 2, TypeOperations.ADD.toString());
-        filmDbStorage.addOrDeleteLikeToFilm(2, 3, TypeOperations.ADD.toString());
-        filmDbStorage.addOrDeleteLikeToFilm(1, 3, TypeOperations.ADD.toString());
-        List<Film> mostPopularFilms = List.of(filmDbStorage.findFilm(2), filmDbStorage.findFilm(1), filmDbStorage.findFilm(3));
-        assertEquals(filmDbStorage.findMostPopularFilms("10"), mostPopularFilms);
-    }
 
     // %%%%%%%%%% Russian text
     @Test
@@ -303,7 +292,7 @@ class FilmorateApplicationTests {
     // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-reviews tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
     // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-reviews tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
 
-    private Review createReview (String content, Boolean isPositive, Integer userId, Integer filmId){
+    private Review createReview(String content, Boolean isPositive, Integer userId, Integer filmId) {
         Review review = new Review();
         review.setContent(content);
         review.setIsPositive(isPositive);
@@ -359,7 +348,7 @@ class FilmorateApplicationTests {
 
     @Test
     @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    public void getReviewListByFilmIdTest(){
+    public void getReviewListByFilmIdTest() {
         addReviewTest();
         List<Review> reviews = reviewDBService.getReviewListByFilmId(1, 2);
         Assertions.assertEquals(reviews.size(), 2);
@@ -431,7 +420,7 @@ class FilmorateApplicationTests {
     @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     public void updateFilmAndGetDirectorSortedFilmsTest() {
         createTestDirectors();
-        for (Film film : filmDbStorage.findFilms()){
+        for (Film film : filmDbStorage.findFilms()) {
             List<Director> directorList = new ArrayList<>();
             directorList.add(filmDbStorage.getDirectorById(1));
             film.setDirectors(directorList);
@@ -471,4 +460,143 @@ class FilmorateApplicationTests {
     // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-director tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
     // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-director tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
 
+
+    // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-most-popular tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+    // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-most-popular tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void returnAllFilms() {
+
+        assertEquals(filmDbStorage.findMostPopularFilms("10", "%", "%").size(), 3);
+
+        List<Film> mostPopularFilms = List.of(filmDbStorage.findFilm(1), filmDbStorage.findFilm(2), filmDbStorage.findFilm(3));
+
+        assertEquals(filmDbStorage.findMostPopularFilms("10", "%", "%"), mostPopularFilms);
+
+    }
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void findMostPopularFilms() {
+        filmDbStorage.addOrDeleteLikeToFilm(2, 1, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(2, 2, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(2, 3, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(1, 3, TypeOperations.ADD.toString());
+
+        Film f = filmDbStorage.findFilm(1);
+        f.setGenres(List.of(filmDbStorage.findGenre(1), filmDbStorage.findGenre(2)));
+        filmDbStorage.updateFilm(f);
+
+        Film a = filmDbStorage.findFilm(2);
+        a.setGenres(List.of(filmDbStorage.findGenre(3), filmDbStorage.findGenre(4)));
+        filmDbStorage.updateFilm(a);
+
+
+        Film c = filmDbStorage.findFilm(3);
+        c.setGenres(List.of(filmDbStorage.findGenre(2)));
+        filmDbStorage.updateFilm(c);
+
+        List<Film> mostPopularFilms = List.of(filmDbStorage.findFilm(2), filmDbStorage.findFilm(1), filmDbStorage.findFilm(3));
+        assertEquals(filmDbStorage.findMostPopularFilms("10", "%", "%"), mostPopularFilms);
+    }
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void wrongYear() {
+
+        assertTrue(filmDbStorage.findMostPopularFilms("10", "%", "2000").isEmpty());
+
+    }
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void wrongGenreId() {
+
+        assertTrue(filmDbStorage.findMostPopularFilms("10", "1", "%").isEmpty());
+
+    }
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void findFilmsByGenreId() {
+
+        Film f = filmDbStorage.findFilm(1);
+        f.setGenres(List.of(filmDbStorage.findGenre(1)));
+        filmDbStorage.updateFilm(f);
+
+        Film a = filmDbStorage.findFilm(2);
+        a.setGenres(List.of(filmDbStorage.findGenre(2)));
+        filmDbStorage.updateFilm(a);
+
+        filmDbStorage.addOrDeleteLikeToFilm(1, 1, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(1, 2, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(1, 3, TypeOperations.ADD.toString());
+
+        assertEquals(filmDbStorage.findMostPopularFilms("10", "1", "%").size(), 1);
+
+        assertEquals(filmDbStorage.findMostPopularFilms("10", "1", "%"), List.of(filmDbStorage.findFilm(1)));
+
+    }
+
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void findFilmsByYear() {
+
+
+        filmDbStorage.addOrDeleteLikeToFilm(1, 1, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(1, 2, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(1, 3, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(2, 3, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(3, 3, TypeOperations.ADD.toString());
+
+        Film f = filmDbStorage.findFilm(1);
+        f.setGenres(List.of(filmDbStorage.findGenre(1)));
+        filmDbStorage.updateFilm(f);
+
+        Film a = filmDbStorage.findFilm(2);
+        a.setGenres(List.of(filmDbStorage.findGenre(1)));
+        filmDbStorage.updateFilm(a);
+
+        assertEquals(filmDbStorage.findMostPopularFilms("10", "%", "1990").size(), 1);
+
+        assertEquals(filmDbStorage.findMostPopularFilms("10", "%", "1990"), List.of(filmDbStorage.findFilm(1)));
+
+    }
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void findFilmsByYearAndGenre() {
+
+
+        filmDbStorage.addOrDeleteLikeToFilm(1, 1, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(1, 2, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(1, 3, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(2, 3, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(2, 2, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(3, 3, TypeOperations.ADD.toString());
+
+        Film f = filmDbStorage.findFilm(1);
+        f.setGenres(List.of(filmDbStorage.findGenre(1), filmDbStorage.findGenre(2)));
+        filmDbStorage.updateFilm(f);
+
+        Film a = filmDbStorage.findFilm(2);
+        a.setGenres(List.of(filmDbStorage.findGenre(3), filmDbStorage.findGenre(4)));
+        filmDbStorage.updateFilm(a);
+
+
+        Film c = filmDbStorage.findFilm(3);
+        c.setGenres(List.of(filmDbStorage.findGenre(2)));
+        filmDbStorage.updateFilm(c);
+
+        assertEquals(filmDbStorage.findMostPopularFilms("10", "2", "1990").size(), 1);
+
+        assertEquals(filmDbStorage.findMostPopularFilms("10", "%", "1990"), List.of(filmDbStorage.findFilm(1)));
+
+    }
+
+    // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-most-popular tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+    // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-most-popular tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
 }

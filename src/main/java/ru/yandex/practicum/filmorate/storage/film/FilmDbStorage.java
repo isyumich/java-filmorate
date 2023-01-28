@@ -11,10 +11,9 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.AlreadyExistValueException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.MPA;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.film.mapper.DirectorMapper;
 import ru.yandex.practicum.filmorate.storage.film.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.storage.film.mapper.GenreMapper;
 import ru.yandex.practicum.filmorate.storage.film.mapper.MPAMapper;
@@ -144,16 +143,6 @@ public class FilmDbStorage implements FilmStorage {
         return film;
     }
 
-    @Override
-    public List<Film> findMostPopularFilms(String countFilms) {
-        String query = "SELECT t1.*, t3.name as mpa_name FROM films t1 " +
-                "LEFT JOIN film_likes_by_user t2 ON t1.id = t2.film_id " +
-                "INNER JOIN MPA t3  ON t1.mpa_id = t3.id " +
-                "group by t1.id " +
-                "order by count(user_id) desc " +
-                "limit ?;";
-        return jdbcTemplate.query(query, new FilmMapper(jdbcTemplate), countFilms);
-    }
 
     @Override
     public List<Genre> findAllGenres() {
@@ -193,7 +182,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getDirectorSortedFilms(int id, String param) {
         directorExistCheckUp(id);
-        if (Objects.equals(param, "year")){
+        if (Objects.equals(param, "year")) {
             String sql = "SELECT t1.*, t2.name AS mpa_name FROM films t1 INNER JOIN MPA t2 ON t1.mpa_id = t2.id WHERE t1.id IN (SELECT film_id FROM directors_films WHERE director_id = ?) ORDER BY EXTRACT(YEAR FROM CAST(release_date AS date));";
             return jdbcTemplate.query(sql, new FilmMapper(jdbcTemplate), id);
         } else if (Objects.equals(param, "likes")) {
@@ -213,7 +202,7 @@ public class FilmDbStorage implements FilmStorage {
     public Director getDirectorById(int id) {
         Director director;
         try {
-            director = jdbcTemplate.queryForObject("SELECT * FROM directors WHERE id = ?", new DirectorMapper(),  id);
+            director = jdbcTemplate.queryForObject("SELECT * FROM directors WHERE id = ?", new DirectorMapper(), id);
             return director;
         } catch (EmptyResultDataAccessException e) {
             throw new NotFoundException(String.format("%s %d %s", "Director с id", id, "не найден"));
@@ -222,7 +211,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Director createDirector(Director director) {
-        if (director.getName().isEmpty() || director.getName() == null || Objects.equals(director.getName(), " ")){
+        if (director.getName().isEmpty() || director.getName() == null || Objects.equals(director.getName(), " ")) {
             throw new ValidationException("Bad name format");
         }
         String sql = "INSERT INTO directors (name) VALUES (?);";
@@ -301,50 +290,30 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-    void directorExistCheckUp(int id){
-        if(!jdbcTemplate.queryForRowSet("SELECT * FROM directors WHERE id = ?", id).next()) {
+    void directorExistCheckUp(int id) {
+        if (!jdbcTemplate.queryForRowSet("SELECT * FROM directors WHERE id = ?", id).next()) {
             throw new NotFoundException("Director not found");
         }
     }
 
 
-
     @Override
-    public List<Film> findMostPopularFilmsByGenreAndYear(String limit, String genreId, String year) {
-        String query ="SELECT * FROM (SELECT t1.*, t3.name as mpa_name  FROM films t1 " +
+    public List<Film> findMostPopularFilms(String limit, String genreId, String year) {
+        // Если список лайков пуст и не передано никаких параметров, то возвращаем все фильмы
+        if (!jdbcTemplate.queryForRowSet("SELECT * FROM FILM_LIKES_BY_USER").next() &&
+                genreId.equals(year)) {
+            return findFilms();
+        }
+        // Даже если список лайков пуст, но у пользователя есть запрос на конкретный год или жанр, то может вернуть пустой список
+        String query = "SELECT * FROM (SELECT t1.*, t3.name as mpa_name  FROM films t1 " +
                 "LEFT JOIN film_likes_by_user t2 ON t1.id = t2.film_id " +
                 "INNER JOIN MPA t3  ON t1.mpa_id = t3.id " +
                 "INNER JOIN FILM_GENRE fg ON t1.id=fg.film_id " +
-                "WHERE GENRE_ID =? AND  EXTRACT(YEAR FROM t1.release_date) = ? " +
+                "WHERE GENRE_ID LIKE '" + genreId + "' AND  EXTRACT(YEAR FROM t1.release_date) LIKE '" + year + "' " +
                 "group by t1.id " +
                 "order by count(user_id) desc) " +
-                "limit ?";
-        return jdbcTemplate.query(query, new FilmMapper(jdbcTemplate), genreId, year, limit);
+                "limit "+ limit;
+        return jdbcTemplate.query(query, new FilmMapper(jdbcTemplate));
     }
 
-    @Override
-    public List<Film> findMostPopularFilmsByGenre(String limit, String genreId) {
-        String query ="SELECT * FROM (SELECT t1.*, t3.name as mpa_name  FROM films t1 " +
-                "LEFT JOIN film_likes_by_user t2 ON t1.id = t2.film_id " +
-                "INNER JOIN MPA t3  ON t1.mpa_id = t3.id " +
-                "INNER JOIN FILM_GENRE fg ON t1.id=fg.film_id " +
-                "WHERE GENRE_ID =? " +
-                "group by t1.id " +
-                "order by count(user_id) desc) " +
-                "limit ?";
-        return jdbcTemplate.query(query, new FilmMapper(jdbcTemplate), genreId, limit);
-    }
-
-    @Override
-    public List<Film> findMostPopularFilmsByYear(String limit, String year) {
-        String query ="SELECT * FROM (SELECT t1.*, t3.name as mpa_name  FROM films t1 " +
-                "LEFT JOIN film_likes_by_user t2 ON t1.id = t2.film_id " +
-                "INNER JOIN MPA t3  ON t1.mpa_id = t3.id " +
-                "INNER JOIN FILM_GENRE fg ON t1.id=fg.film_id " +
-                "WHERE  EXTRACT(YEAR FROM t1.release_date) = ? " +
-                "group by t1.id " +
-                "order by count(user_id) desc) " +
-                "limit ?";
-        return jdbcTemplate.query(query, new FilmMapper(jdbcTemplate), year, limit);
-    }
 }

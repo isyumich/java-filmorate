@@ -6,8 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -54,11 +52,6 @@ public class FilmService {
         return filmStorage.findFilm(filmId);
     }
 
-    public List<Film> findMostPopularFilms(String countFilms) {
-        log.info(String.format("%s %s %s", "Запрос на получение списка из", countFilms, "самых популярных фильмов"));
-        return filmStorage.findMostPopularFilms(countFilms);
-    }
-
     public List<Genre> findAllGenres() {
         log.info("Запрос на получение списка жанров");
         return filmStorage.findAllGenres();
@@ -81,55 +74,42 @@ public class FilmService {
 
     // Start of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's services %%%%%%%%% %%%%%%%%% %%%%%%%%%
 
-    public List<Film> getDirectorSortedFilms(int id, String param){
+    public List<Film> getDirectorSortedFilms(int id, String param) {
         log.info("Запрос на отсортированный список фильмов");
         return filmStorage.getDirectorSortedFilms(id, param);
     }
 
-    public List<Director> getAllDirectors(){
+    public List<Director> getAllDirectors() {
         log.info("Запрос на список всех режиссеров");
         return filmStorage.getAllDirectors();
     }
 
-    public Director getDirectorById(int id){
+    public Director getDirectorById(int id) {
         log.info("Запрос на режиссера по id");
         return filmStorage.getDirectorById(id);
     }
 
-    public Director createDirector(Director director){
+    public Director createDirector(Director director) {
         log.info("Запрос на добавление нового режиссера");
         return filmStorage.createDirector(director);
     }
 
-    public Director updateDirector(Director director){
+    public Director updateDirector(Director director) {
         log.info("Запрос на изменение режиссера");
         return filmStorage.updateDirector(director);
     }
 
-    public Director deleteDirector(int id){
+    public Director deleteDirector(int id) {
         log.info("Запрос на удаление режиссера по id");
         return filmStorage.deleteDirector(id);
     }
     // End of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's services %%%%%%%%% %%%%%%%%% %%%%%%%%%
 
 
-    public List<Film> getTopFilmsByGenreAndYear(String limit, String genreId, String year) {
-        if (year.equals("-1")) {
-            if (genreId.equals("-1")) {
-                log.info("Запрос на получение популярных фильмов");
-                return filmStorage.findMostPopularFilms(limit);
-            } else {
-                log.info("Запрос на получение популярных фильмов в жанре: {}", findGenre(Integer.parseInt(genreId)).getName());
-                return filmStorage.findMostPopularFilmsByGenre(limit, genreId);
-            }
-        } else {
-            if (genreId.equals("-1")) {
-                log.info("Запрос на получение популярных фильмов {} года", year);
-                return filmStorage.findMostPopularFilmsByYear(limit, year);
-            } else {
-                log.info("Запрос на получение популярных фильмов {} года в жанре: {}", year, findGenre(Integer.parseInt(genreId)).getName());
-                return filmStorage.findMostPopularFilmsByGenreAndYear(limit, genreId, year);
-            }
-        }
+    public List<Film> findMostPopularFilms(String limit, String genreId, String year) {
+        log.info("Запрос на поиск популярных фильмов в жанре {} {} года выпуска в количестве {}", genreId, year, limit);
+        return filmStorage.findMostPopularFilms(limit, genreId, year);
     }
+
+
 }

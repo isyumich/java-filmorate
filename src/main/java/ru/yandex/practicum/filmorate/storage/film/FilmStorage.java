@@ -18,7 +18,6 @@ public interface FilmStorage {
 
     Film addOrDeleteLikeToFilm(long filmId, long userId, String typeOperation);
 
-    List<Film> findMostPopularFilms(String countFilms);
 
     List<Genre> findAllGenres();
 
@@ -27,10 +26,7 @@ public interface FilmStorage {
     List<MPA> findAllMPA();
 
     MPA findMPA(int mpaId);
-    List <Film> findMostPopularFilmsByGenreAndYear(String limit, String genreId, String year);
-    List <Film> findMostPopularFilmsByGenre(String limit, String genreId);
-
-    List <Film> findMostPopularFilmsByYear(String limit, String year);
+    List <Film> findMostPopularFilms(String limit, String genreId, String year);
 
     // Start of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's funcs %%%%%%%%% %%%%%%%%% %%%%%%%%%
     List<Film> getDirectorSortedFilms(int id, String param);
