@@ -63,10 +63,10 @@ public class FilmController {
         return filmService.findFilm(filmId);
     }
 
-    @GetMapping(pathForFilms + "/popular")
+/*    @GetMapping(pathForFilms + "/popular")
     List<Film> findMostPopularFilms(@RequestParam(defaultValue = "10", name = "count") String countFilms) {
         return filmService.findMostPopularFilms(countFilms);
-    }
+    }*/
 
     @GetMapping(pathForGenres)
     List<Genre> findGenres() {
@@ -86,5 +86,12 @@ public class FilmController {
     @GetMapping(pathForMPA + "/{id}")
     MPA findMPA(@PathVariable("id") int MPAId) {
         return filmService.findMPA(MPAId);
+    }
+
+    @GetMapping(pathForFilms+"/popular") //изменить сам метод популярных фильмов
+    List <Film> getGenreYearFilms( @RequestParam(defaultValue = "10", name = "count")String limit,
+                                @RequestParam(defaultValue = "-1", name = "genreId") String genreId,
+                                @RequestParam(defaultValue = "-1", name ="year") String year ){
+        return filmService.getTopFilmsByGenreAndYear(limit, genreId, year);
     }
 }

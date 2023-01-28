@@ -26,5 +26,9 @@ public interface FilmStorage {
     List<MPA> findAllMPA();
 
     MPA findMPA(int mpaId);
+    List <Film> findMostPopularFilmsByGenreAndYear(String limit, String genreId, String year);
+    List <Film> findMostPopularFilmsByGenre(String limit, String genreId);
+
+    List <Film> findMostPopularFilmsByYear(String limit, String year);
 
 }

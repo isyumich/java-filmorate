@@ -75,4 +75,24 @@ public class FilmService {
         log.info(String.format("%s %d", "Запрос на получение рейтинга по id", mpaId));
         return filmStorage.findMPA(mpaId);
     }
+
+    public List<Film> getTopFilmsByGenreAndYear(String limit, String genreId, String year) {
+        if (year.equals("-1")) {
+            if (genreId.equals("-1")) {
+                log.info("Запрос на получение популярных фильмов");
+                return filmStorage.findMostPopularFilms(limit);
+            } else {
+                log.info("Запрос на получение популярных фильмов в жанре: {}", findGenre(Integer.parseInt(genreId)).getName());
+                return filmStorage.findMostPopularFilmsByGenre(limit, genreId);
+            }
+        } else {
+            if (genreId.equals("-1")) {
+                log.info("Запрос на получение популярных фильмов {} года", year);
+                return filmStorage.findMostPopularFilmsByYear(limit, year);
+            } else {
+                log.info("Запрос на получение популярных фильмов {} года в жанре: {}", year, findGenre(Integer.parseInt(genreId)).getName());
+                return filmStorage.findMostPopularFilmsByGenreAndYear(limit, genreId, year);
+            }
+        }
+    }
 }

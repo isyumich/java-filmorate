@@ -187,6 +187,8 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
+
+
     private void checkLikesSet(Film film) {
         if (film.getUsersWhoLiked() == null) {
             film.setUsersWhoLiked(new HashSet<>());
@@ -208,5 +210,45 @@ public class FilmDbStorage implements FilmStorage {
             }
             film.setGenres(newList);
         }
+    }
+
+
+    @Override
+    public List<Film> findMostPopularFilmsByGenreAndYear(String limit, String genreId, String year) {
+        String query ="SELECT * FROM (SELECT t1.*, t3.name as mpa_name  FROM films t1 " +
+                "LEFT JOIN film_likes_by_user t2 ON t1.id = t2.film_id " +
+                "INNER JOIN MPA t3  ON t1.mpa_id = t3.id " +
+                "INNER JOIN FILM_GENRE fg ON t1.id=fg.film_id " +
+                "WHERE GENRE_ID =? AND  EXTRACT(YEAR FROM t1.release_date) = ? " +
+                "group by t1.id " +
+                "order by count(user_id) desc) " +
+                "limit ?";
+        return jdbcTemplate.query(query, new FilmMapper(jdbcTemplate), genreId, year, limit);
+    }
+
+    @Override
+    public List<Film> findMostPopularFilmsByGenre(String limit, String genreId) {
+        String query ="SELECT * FROM (SELECT t1.*, t3.name as mpa_name  FROM films t1 " +
+                "LEFT JOIN film_likes_by_user t2 ON t1.id = t2.film_id " +
+                "INNER JOIN MPA t3  ON t1.mpa_id = t3.id " +
+                "INNER JOIN FILM_GENRE fg ON t1.id=fg.film_id " +
+                "WHERE GENRE_ID =? " +
+                "group by t1.id " +
+                "order by count(user_id) desc) " +
+                "limit ?";
+        return jdbcTemplate.query(query, new FilmMapper(jdbcTemplate), genreId, limit);
+    }
+
+    @Override
+    public List<Film> findMostPopularFilmsByYear(String limit, String year) {
+        String query ="SELECT * FROM (SELECT t1.*, t3.name as mpa_name  FROM films t1 " +
+                "LEFT JOIN film_likes_by_user t2 ON t1.id = t2.film_id " +
+                "INNER JOIN MPA t3  ON t1.mpa_id = t3.id " +
+                "INNER JOIN FILM_GENRE fg ON t1.id=fg.film_id " +
+                "WHERE  EXTRACT(YEAR FROM t1.release_date) = ? " +
+                "group by t1.id " +
+                "order by count(user_id) desc) " +
+                "limit ?";
+        return jdbcTemplate.query(query, new FilmMapper(jdbcTemplate), year, limit);
     }
 }

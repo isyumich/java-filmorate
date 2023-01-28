@@ -140,6 +140,22 @@ public class InMemoryFilmStorage implements FilmStorage {
         return MPAList.get(mpaId);
     }
 
+    @Override
+    public List<Film> findMostPopularFilmsByGenreAndYear(String limit, String genreId, String year) {
+        return null;
+    }
+
+    @Override
+    public List<Film> findMostPopularFilmsByGenre(String limit, String genreId) {
+        return null;
+    }
+
+    @Override
+    public List<Film> findMostPopularFilmsByYear(String limit, String year) {
+        return null;
+    }
+
+
     private void setEmptyLikesSet(Film film) {
         if (film.getUsersWhoLiked() == null) {
             film.setUsersWhoLiked(new HashSet<>());
