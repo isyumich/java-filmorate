@@ -160,6 +160,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     public List<Event> getFeed(long userId) {
+        findUser(userId);
         String query = "SELECT e1.id, " +
                 "e1.user_id, " +
                 "e2.name AS event_type, " +

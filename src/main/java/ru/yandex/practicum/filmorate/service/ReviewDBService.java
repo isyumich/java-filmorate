@@ -61,10 +61,11 @@ public class ReviewDBService {
     public Review updateReview(Review review) {
         if(jdbcTemplate.queryForRowSet("SELECT * FROM film_reviews WHERE id = ?", review.getReviewId()).next()) {
             jdbcTemplate.update("MERGE INTO film_reviews (id, content, is_positive) KEY (id) VALUES (?, ?, ?)",review.getReviewId(), review.getContent(), review.getIsPositive());
+            addToFeedUpdateReview(getUserIdFromReviewId(review.getReviewId()), review.getReviewId());
         } else {
             throw new NotFoundException("Review not found");
         }
-        addToFeedUpdateReview(review.getUserId(), review.getReviewId());
+
         return findReviewById(review.getReviewId());
     }
 
