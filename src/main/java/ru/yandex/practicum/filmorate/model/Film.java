@@ -21,6 +21,7 @@ public class Film {
     int duration;
     List<Genre> genres;
     MPA mpa;
+    List<Director> directors;
     @JsonIgnore
     Set<Long> usersWhoLiked;
 

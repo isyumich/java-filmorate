@@ -99,4 +99,3 @@ CREATE TABLE IF NOT EXISTS films_reviews_like(
      user_id INTEGER REFERENCES users(id),
      review_like_count INTEGER
 );
-
