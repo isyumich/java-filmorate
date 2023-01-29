@@ -471,4 +471,13 @@ class FilmorateApplicationTests {
     // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-director tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
     // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-director tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
 
+    // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-feed tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+    // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-feed tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+
+    public void checkFeed() {
+        userDbStorage.getFeed(1);
+    }
+
+    // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-feed tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+    // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-feed tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
 }

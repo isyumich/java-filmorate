@@ -144,10 +144,15 @@ public class ReviewDBService {
     }
 
     private void addToFeedDeleteReview(int reviewId) {
-        long userId = findReviewById(reviewId).getUserId();
         String query = "INSERT INTO events_history (user_id, event_type_id, operations_type_id, entity_id, date_time) " +
                 "VALUES (?, 3, 2, ?, ?)";
-        jdbcTemplate.update(query, userId, reviewId, Date.from(Instant.now()));
+        jdbcTemplate.update(query, getUserIdFromReviewId(reviewId), reviewId, Date.from(Instant.now()));
+    }
+
+    private int getUserIdFromReviewId(int reviewId) {
+        SqlRowSet reviewSet = jdbcTemplate.queryForRowSet("SELECT user_id FROM film_reviews WHERE id = ?", reviewId);
+        reviewSet.next();
+        return reviewSet.getInt("user_id");
     }
 
 }
