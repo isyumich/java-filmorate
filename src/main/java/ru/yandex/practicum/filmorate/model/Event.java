@@ -18,11 +18,11 @@ public class Event {
     @JsonFormat(shape = JsonFormat.Shape.NUMBER)
     Date timestamp;
     @NotNull
-    long userId;
+    int userId;
     String eventType;
     String operation;
     @NotNull
-    long eventId;
+    int eventId;
     @NotNull
-    long entityId;
+    int entityId;
 }

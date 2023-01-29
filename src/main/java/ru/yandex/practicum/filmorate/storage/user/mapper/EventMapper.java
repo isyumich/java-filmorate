@@ -10,11 +10,11 @@ public class EventMapper implements RowMapper<Event> {
     @Override
     public Event mapRow(ResultSet rs, int rowNum) throws SQLException {
         return Event.builder()
-                .eventId(rs.getLong("id"))
-                .userId(rs.getLong("user_id"))
+                .eventId(rs.getInt("id"))
+                .userId(rs.getInt("user_id"))
                 .eventType(rs.getString("event_type"))
                 .operation(rs.getString("operation_type"))
-                .entityId(rs.getLong("entity_id"))
+                .entityId(rs.getInt("entity_id"))
                 .timestamp(rs.getTimestamp("date_time"))
                 .build();
     }
