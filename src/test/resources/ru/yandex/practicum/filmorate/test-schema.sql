@@ -90,7 +90,7 @@ CREATE TABLE IF NOT EXISTS events_history(
                                              user_id INTEGER REFERENCES users(id),
     event_type_id INTEGER REFERENCES event_types(id),
     operations_type_id INTEGER REFERENCES event_operations_types(id),
-    event_id INTEGER NOT NULL,
+    entity_id INTEGER NOT NULL,
     date_time TIMESTAMP
     );
 

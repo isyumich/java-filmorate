@@ -8,8 +8,11 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Review;
+
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.List;
 
 @Data
@@ -30,6 +33,7 @@ public class ReviewDBService {
             review.setReviewId(reviewSet.getInt("id"));
             log.info("Film has been created, ID: {}", review.getReviewId());
         }
+        addToFeedAddReview(review.getUserId(), review.getReviewId());
         return review;
     }
 
@@ -60,6 +64,7 @@ public class ReviewDBService {
         } else {
             throw new NotFoundException("Review not found");
         }
+        addToFeedUpdateReview(review.getUserId(), review.getReviewId());
         return findReviewById(review.getReviewId());
     }
 
@@ -70,6 +75,7 @@ public class ReviewDBService {
 
     public void removeReviewById(int id) {
         if(jdbcTemplate.queryForRowSet("SELECT * FROM film_reviews WHERE id = ?", id).next()) {
+            addToFeedDeleteReview(id);
             jdbcTemplate.update("DELETE FROM films_reviews_like WHERE review_id = ?", id);
             jdbcTemplate.update("DELETE FROM film_reviews WHERE id = ?", id);
         } else {
@@ -123,6 +129,25 @@ public class ReviewDBService {
         if(!jdbcTemplate.queryForRowSet("SELECT * FROM films WHERE id = ?", filmId).next()) {
             throw new NotFoundException("Review not found");
         }
+    }
+
+    private void addToFeedAddReview(Integer userId, int reviewId) {
+        String query = "INSERT INTO events_history (user_id, event_type_id, operations_type_id, entity_id, date_time) " +
+                "VALUES (?, 3, 1, ?, ?)";
+        jdbcTemplate.update(query, userId, reviewId, Date.from(Instant.now()));
+    }
+
+    private void addToFeedUpdateReview(Integer userId, int reviewId) {
+        String query = "INSERT INTO events_history (user_id, event_type_id, operations_type_id, entity_id, date_time) " +
+                "VALUES (?, 3, 3, ?, ?)";
+        jdbcTemplate.update(query, userId, reviewId, Date.from(Instant.now()));
+    }
+
+    private void addToFeedDeleteReview(int reviewId) {
+        long userId = findReviewById(reviewId).getUserId();
+        String query = "INSERT INTO events_history (user_id, event_type_id, operations_type_id, entity_id, date_time) " +
+                "VALUES (?, 3, 2, ?, ?)";
+        jdbcTemplate.update(query, userId, reviewId, Date.from(Instant.now()));
     }
 
 }
