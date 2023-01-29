@@ -495,20 +495,20 @@ class FilmorateApplicationTests {
             filmDbStorage.addNewFilm(film);
         }
 
-        userService.addOrDeleteToFriends(1, 2, "ADD");
         filmService.addOrDeleteLikeToFilm(1L, 2L, "ADD");
+
         Optional<Film> filmOptional = Optional.of(recommendService.getRecommendation(1L).get(0));
         assertThat(filmOptional)
                 .isPresent()
                 .hasValueSatisfying(film ->
-                        assertThat(film).hasFieldOrPropertyWithValue("id", 1L))
+                        assertThat(film).hasFieldOrPropertyWithValue("id", 1L));
+        filmService.addOrDeleteLikeToFilm(1L, 2L, "DELETE");
+        filmService.addOrDeleteLikeToFilm(2L, 2L, "ADD");
+        filmOptional = Optional.of(recommendService.getRecommendation(1L).get(0));
+        assertThat(filmOptional)
+                .isPresent()
                 .hasValueSatisfying(film ->
-                        assertThat(film).hasFieldOrPropertyWithValue("name", "testName4"));
-
-        userService.addOrDeleteToFriends(1, 2, "DELETE");
-        Optional<List<Film>> recommendOptional = Optional.of(recommendService.getRecommendation(1L));
-        assertThat(recommendOptional).isPresent();
-        assertThat(recommendOptional.get().isEmpty());
+                        assertThat(film).hasFieldOrPropertyWithValue("id", 2L));
     }
 
     // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-recommendations tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%

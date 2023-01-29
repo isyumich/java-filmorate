@@ -26,15 +26,16 @@ public class RecommendationService {
     }
 
     public List<Film> getRecommendation(Long userId) {
-        List<Long> userLikedFilms = findUserLikes(userId);                                                      //Получаем лайки пользователя
-        LinkedHashMap<Long, List<Long>> friendsLikedFilms = findFriendsLikes(userId);                           //Получаем лайки друзей
-        Long friendWithMutualInterests = findFriendWithMutualInterests(userLikedFilms, friendsLikedFilms);     //Выбираем друга, у которого будем брать рекомендацию
+        LinkedHashMap<Long, List<Long>> allUsersLikes = getAllUsersLikes();
+        List<Long> userLikedFilms = findUserLikes(allUsersLikes, userId);                                                      //Получаем лайки пользователя
+        LinkedHashMap<Long, List<Long>> otherUsersLikedFilms = findOtherUsersLikes(allUsersLikes, userId);                           //Получаем лайки друзей
+        Long otherUsersWithMutualInterests = findUsersWithMutualInterests(userLikedFilms, otherUsersLikedFilms);     //Выбираем друга, у которого будем брать рекомендацию
         List<Long> recommendation = new ArrayList<>();
-        if (friendsLikedFilms.isEmpty()) {
+        if (otherUsersLikedFilms.isEmpty()) {
             log.info("Не удалось рекомендовать фильм: не найдены лайки от друзей пользователя id=" + userId);
             return new ArrayList<Film>();
         }
-        for (Long filmId : friendsLikedFilms.get(friendWithMutualInterests)) {
+        for (Long filmId : otherUsersLikedFilms.get(otherUsersWithMutualInterests)) {
             if (!userLikedFilms.contains(filmId)) {
                 recommendation.add(filmId);
             }
@@ -42,63 +43,59 @@ public class RecommendationService {
         return findMultipleFilms(recommendation);
     }
 
-    private List<Long> findUserLikes(Long userId) {
-        List<Long> likedFilms = new ArrayList<>();
-        String sqlQuery =
-                "SELECT user_id, film_id " +
-                "FROM film_likes_by_user " +
-                "WHERE user_id = " + userId + ";";
-        SqlRowSet userLikesRows = jdbcTemplate.queryForRowSet(sqlQuery);
-        while (userLikesRows.next()) {
-            Long filmId = Long.parseLong(userLikesRows.getString("film_id"));
-            likedFilms.add(filmId);
-        }
-        return likedFilms;
-    }
-
-    private LinkedHashMap<Long, List<Long>> findFriendsLikes(Long userId){
+    private LinkedHashMap<Long, List<Long>> getAllUsersLikes() {
         LinkedHashMap<Long, List<Long>> likedFilms = new LinkedHashMap<>();
-        String sqlQuery =
-                "SELECT fl.user_id, fl.friend_id, flbu.film_id " +
-                "FROM users u " +
-                "JOIN friends_list fl ON fl.user_id = u.id " +
-                "LEFT JOIN film_likes_by_user flbu ON fl.friend_id = flbu.user_id " +
-                "WHERE u.id = " + userId + ";";
+        String sqlQuery = "SELECT user_id, film_id FROM film_likes_by_user;";
         SqlRowSet usersFriendsLikesRows = jdbcTemplate.queryForRowSet(sqlQuery);
         while (usersFriendsLikesRows.next()) {
-            Long friend = Long.parseLong(usersFriendsLikesRows.getString("friend_id"));
-            Long film = 0L;
+            Long userId = Long.parseLong(usersFriendsLikesRows.getString("user_id"));
+            Long filmId = 0L;
             try {
-                film = Long.parseLong(usersFriendsLikesRows.getString("film_id"));
+                filmId = Long.parseLong(usersFriendsLikesRows.getString("film_id"));
             } catch (NumberFormatException e) {
             }
-            if(film != 0L && film != null) {
-                if (likedFilms.containsKey(friend)) {
-                    likedFilms.get(friend).add(film);
+            if(filmId != 0L && filmId != null) {
+                if (likedFilms.containsKey(userId)) {
+                    likedFilms.get(userId).add(filmId);
                 } else {
                     ArrayList<Long> list = new ArrayList<>();
-                    list.add(film);
-                    likedFilms.put(friend, list);
+                    list.add(filmId);
+                    likedFilms.put(userId, list);
                 }
             }
         }
         return likedFilms;
     }
 
-    private Long findFriendWithMutualInterests(List<Long> userLikes, LinkedHashMap<Long, List<Long>> friendsLikes) {
-        if (userLikes.isEmpty()) {
-            if (friendsLikes.isEmpty()) {
+    private List<Long> findUserLikes(LinkedHashMap<Long, List<Long>> allUsersLikes, Long userId) {
+        if(allUsersLikes.containsKey(userId)) {
+            return allUsersLikes.get(userId);
+        }
+        return new ArrayList<>();
+    }
+
+    private LinkedHashMap<Long, List<Long>> findOtherUsersLikes(LinkedHashMap<Long, List<Long>> allUsersLikes, Long userId) {
+        if (!allUsersLikes.containsKey(userId) || allUsersLikes == null) {
+            return allUsersLikes;
+        }
+        allUsersLikes.remove(userId);
+        return allUsersLikes;
+    }
+
+    private Long findUsersWithMutualInterests(List<Long> userLikes, LinkedHashMap<Long, List<Long>> otherUsersLikes) {
+        if (userLikes == null || userLikes.isEmpty()) {
+            if (otherUsersLikes == null || otherUsersLikes.isEmpty()) {
                 return 0L;
             } else {
-                for (Long friendId : friendsLikes.keySet()) {
-                    return friendId;
+                for (Long otherUserId : otherUsersLikes.keySet()) {
+                    return otherUserId;
                 }
             }
         }
         LinkedHashMap<Long, Long> matchingCounter = new LinkedHashMap<>();
-        for (Long friendId : friendsLikes.keySet()) {
+        for (Long friendId : otherUsersLikes.keySet()) {
             Long counter = 0L;
-            for (Long friendLikes : friendsLikes.get(friendId)) {
+            for (Long friendLikes : otherUsersLikes.get(friendId)) {
                 if (userLikes.contains(friendLikes)) {
                     counter++;
                 }
