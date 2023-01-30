@@ -112,4 +112,8 @@ public class FilmService {
     }
     // End of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's services %%%%%%%%% %%%%%%%%% %%%%%%%%%
 
+
+    public List <Film> getCommonFilms (long userId, long friendId){
+        return filmStorage.getCommonFilms(userId, friendId);
+    }
 }

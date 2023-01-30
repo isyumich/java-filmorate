@@ -42,5 +42,5 @@ public interface FilmStorage {
     Director deleteDirector(int id);
 
     // End of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's services %%%%%%%%% %%%%%%%%% %%%%%%%%%
-
+  List <Film> getCommonFilms(long userId, long friendId);
 }

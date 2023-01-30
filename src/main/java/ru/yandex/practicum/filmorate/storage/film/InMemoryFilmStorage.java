@@ -183,6 +183,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Director deleteDirector(int id) {
         return null;
     }
+
+    @Override
+    public List<Film> getCommonFilms(long userId, long friendId) {
+        return null;
+    }
     // End of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's funcs %%%%%%%%% %%%%%%%%% %%%%%%%%%
 
 }

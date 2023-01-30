@@ -22,8 +22,7 @@ import java.time.LocalDate;
 import java.util.*;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
@@ -470,5 +469,53 @@ class FilmorateApplicationTests {
 
     // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-director tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
     // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-director tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+
+
+    // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-common-films tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+    // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-common-films tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void emptyCommonFilms() {
+        filmDbStorage.addOrDeleteLikeToFilm(1, 1, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(1, 3, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(2, 1, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(2, 3, TypeOperations.ADD.toString());
+
+        assertTrue(filmDbStorage.getCommonFilms(1,2).isEmpty());
+
+    }
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void returnCommonFilms() {
+        filmDbStorage.addOrDeleteLikeToFilm(1, 1, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(1, 2, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(2, 1, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(2, 3, TypeOperations.ADD.toString());
+
+        assertEquals(filmDbStorage.getCommonFilms(1,2), List.of(filmDbStorage.findFilm(1)));
+
+    }
+
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void returnEmptyList() {
+        filmDbStorage.addOrDeleteLikeToFilm(1, 1, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(1, 2, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(2, 1, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(2, 3, TypeOperations.ADD.toString());
+
+        assertEquals(filmDbStorage.getCommonFilms(1,2), List.of(filmDbStorage.findFilm(1)));
+
+        filmDbStorage.addOrDeleteLikeToFilm(1, 2, TypeOperations.DELETE.toString());
+
+        assertTrue(filmDbStorage.getCommonFilms(1,2).isEmpty());
+    }
+
+    // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-common-films tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+    // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-common-films tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+
 
 }

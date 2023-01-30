@@ -122,4 +122,10 @@ public class FilmController {
 
     // End of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's end points %%%%%%%%% %%%%%%%%% %%%%%%%%%
 
+
+    @GetMapping(pathForFilms+"/common")
+    List <Film> getCommonFilms(@RequestParam (name = "userId") long userId,
+                               @RequestParam(name = "friendId") long friendId){
+       return filmService.getCommonFilms(userId, friendId);
+    }
 }
