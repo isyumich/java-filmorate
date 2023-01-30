@@ -112,4 +112,8 @@ public class FilmService {
     }
     // End of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's services %%%%%%%%% %%%%%%%%% %%%%%%%%%
 
+    public void deleteFilm(long id){
+        log.info("Запрос на удаление фильма по id");
+        filmStorage.deleteFilm(id);
+    }
 }

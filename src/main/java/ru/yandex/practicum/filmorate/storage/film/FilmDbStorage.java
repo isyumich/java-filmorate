@@ -256,6 +256,9 @@ public class FilmDbStorage implements FilmStorage {
         log.info(String.format("%s %d %s", "Режиссер с id ", id, " успешно удален"));
         return director;
     }
+
+
+
     // End of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's funcs %%%%%%%%% %%%%%%%%% %%%%%%%%%
 
     private void checkLikesSet(Film film) {
@@ -305,5 +308,20 @@ public class FilmDbStorage implements FilmStorage {
             throw new NotFoundException("Director not found");
         }
     }
+    @Override
+    public void deleteFilm(long id) {
+        filmExistCheckUp(id);
+        jdbcTemplate.update("delete   from DIRECTORS_FILMS where FILM_ID = ? ", id);
+        jdbcTemplate.update("delete   from FILM_GENRE where FILM_ID = ? ", id);
+        jdbcTemplate.update("delete   from FILM_LIKES_BY_USER where FILM_ID = ? ", id);
+        jdbcTemplate.update("delete   from FILM_REVIEWS where FILM_ID = ? ", id);
+        jdbcTemplate.update("delete   from FILMS where ID = ? ", id);
+        log.info("Удалён фильм с id : {} ", id);
+    }
 
+    void filmExistCheckUp (long id){
+        if(!jdbcTemplate.queryForRowSet("SELECT * FROM FILMS WHERE id = ?", id).next()) {
+            throw new NotFoundException("Film not found");
+        }
+    }
 }

@@ -138,8 +138,25 @@ public class UserDbStorage implements UserStorage {
     }
 
     public List<User> getFriendsList(long userId) {
+        userExistCheckUp(userId);
         String query = "SELECT * FROM users WHERE id IN (SELECT friend_id FROM friends_list WHERE user_id = ?);";
         return jdbcTemplate.query(query, new UserMapper(jdbcTemplate), userId);
+    }
+
+    @Override
+    public void deleteUser(long id) {
+        userExistCheckUp(id);
+        jdbcTemplate.update("delete  from FILM_LIKES_BY_USER where USER_ID = ? ", id);
+        jdbcTemplate.update("delete  from FRIENDS_LIST where USER_ID = ? ", id);
+        jdbcTemplate.update("delete  from FRIENDS_LIST where FRIEND_ID = ? ", id);
+        jdbcTemplate.update("delete  from USERS where ID = ? ", id);
+        log.info("Удалён пользователь с id : {} ", id);
+    }
+
+    void userExistCheckUp(long id) {
+        if (!jdbcTemplate.queryForRowSet("SELECT * FROM USERS WHERE id = ?", id).next()) {
+            throw new NotFoundException("User not found");
+        }
     }
 
     private void changeEmptyName(User user) {
