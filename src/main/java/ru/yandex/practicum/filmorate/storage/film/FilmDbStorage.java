@@ -28,6 +28,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
+import static ru.yandex.practicum.filmorate.service.Constants.*;
+
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Component
@@ -148,14 +150,14 @@ public class FilmDbStorage implements FilmStorage {
 
     private void addToFeedDeleteLike(long userId, long filmId) {
         String query = "INSERT INTO events_history (user_id, event_type_id, operations_type_id, entity_id, date_time) " +
-                "VALUES (?, 2, 2, ?, ?)";
-        jdbcTemplate.update(query, userId, filmId, Date.from(Instant.now()));
+                "VALUES (?, ?, ?, ?, ?)";
+        jdbcTemplate.update(query, userId, EVENT_TYPE_LIKE, OPERATION_TYPE_DELETE, filmId, Date.from(Instant.now()));
     }
 
     private void addToFeedAddLike(long userId, long filmId) {
         String query = "INSERT INTO events_history (user_id, event_type_id, operations_type_id, entity_id, date_time) " +
-                "VALUES (?, 2, 1, ?, ?)";
-        jdbcTemplate.update(query, userId, filmId, Date.from(Instant.now()));
+                "VALUES (?, ?, ?, ?, ?)";
+        jdbcTemplate.update(query, userId, EVENT_TYPE_LIKE, OPERATION_TYPE_ADD,filmId, Date.from(Instant.now()));
     }
 
     @Override

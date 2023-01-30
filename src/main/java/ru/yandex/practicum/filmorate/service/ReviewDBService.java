@@ -15,6 +15,8 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 
+import static ru.yandex.practicum.filmorate.service.Constants.*;
+
 @Data
 @Repository
 @Slf4j
@@ -134,20 +136,20 @@ public class ReviewDBService {
 
     private void addToFeedAddReview(Integer userId, int reviewId) {
         String query = "INSERT INTO events_history (user_id, event_type_id, operations_type_id, entity_id, date_time) " +
-                "VALUES (?, 3, 1, ?, ?)";
-        jdbcTemplate.update(query, userId, reviewId, Date.from(Instant.now()));
+                "VALUES (?, ?, ?, ?, ?)";
+        jdbcTemplate.update(query, userId, EVENT_TYPE_REVIEW, OPERATION_TYPE_ADD, reviewId, Date.from(Instant.now()));
     }
 
     private void addToFeedUpdateReview(Integer userId, int reviewId) {
         String query = "INSERT INTO events_history (user_id, event_type_id, operations_type_id, entity_id, date_time) " +
-                "VALUES (?, 3, 3, ?, ?)";
-        jdbcTemplate.update(query, userId, reviewId, Date.from(Instant.now()));
+                "VALUES (?, ?, ?, ?, ?)";
+        jdbcTemplate.update(query, userId, EVENT_TYPE_REVIEW, OPERATION_TYPE_UPDATE, reviewId, Date.from(Instant.now()));
     }
 
     private void addToFeedDeleteReview(int reviewId) {
         String query = "INSERT INTO events_history (user_id, event_type_id, operations_type_id, entity_id, date_time) " +
-                "VALUES (?, 3, 2, ?, ?)";
-        jdbcTemplate.update(query, getUserIdFromReviewId(reviewId), reviewId, Date.from(Instant.now()));
+                "VALUES (?, ?, ?, ?, ?)";
+        jdbcTemplate.update(query, getUserIdFromReviewId(reviewId), EVENT_TYPE_REVIEW, OPERATION_TYPE_DELETE, reviewId, Date.from(Instant.now()));
     }
 
     private int getUserIdFromReviewId(int reviewId) {

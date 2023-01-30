@@ -24,6 +24,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
+import static ru.yandex.practicum.filmorate.service.Constants.*;
+
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Component
@@ -136,14 +138,14 @@ public class UserDbStorage implements UserStorage {
 
     private void addToFeedAddFriend(long firstUserId, long secondUserId) {
         String query = "INSERT INTO events_history (user_id, event_type_id, operations_type_id, entity_id, date_time) " +
-                "VALUES (?, 1, 1, ?, ?)";
-        jdbcTemplate.update(query, firstUserId, secondUserId, Date.from(Instant.now()));
+                "VALUES (?, ?, ?, ?, ?)";
+        jdbcTemplate.update(query, firstUserId, EVENT_TYPE_FRIEND, OPERATION_TYPE_ADD, secondUserId, Date.from(Instant.now()));
     }
 
     private void addToFeedDeleteFriend(long firstUserId, long secondUserId) {
         String query = "INSERT INTO events_history (user_id, event_type_id, operations_type_id, entity_id, date_time) " +
-                "VALUES (?, 1, 2, ?, ?)";
-        jdbcTemplate.update(query, firstUserId, secondUserId, Date.from(Instant.now()));
+                "VALUES (?, ?, ?, ?, ?)";
+        jdbcTemplate.update(query, firstUserId, EVENT_TYPE_FRIEND, OPERATION_TYPE_DELETE, secondUserId, Date.from(Instant.now()));
     }
 
     public List<User> getMutualFriends(long firstUserId, long secondUserId) {
