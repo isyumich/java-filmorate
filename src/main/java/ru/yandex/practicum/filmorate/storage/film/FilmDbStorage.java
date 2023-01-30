@@ -310,7 +310,6 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getCommonFilms(long userId, long friendId) {
-
         String query = ("SELECT t1.*, t3.name as mpa_name FROM films t1 " +
                 "LEFT JOIN film_likes_by_user t2 ON t1.id = t2.film_id " +
                 "INNER JOIN MPA t3 ON t1.mpa_id = t3.id" +
