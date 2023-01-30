@@ -122,4 +122,8 @@ public class FilmController {
 
     // End of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's end points %%%%%%%%% %%%%%%%%% %%%%%%%%%
 
+    @DeleteMapping(pathForFilms+"/{id}")
+    public void delete(@PathVariable("id") long filmId) {
+        filmService.deleteFilm(filmId);
+    }
 }

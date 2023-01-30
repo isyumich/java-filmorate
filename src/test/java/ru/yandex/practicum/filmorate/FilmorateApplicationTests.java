@@ -250,7 +250,6 @@ class FilmorateApplicationTests {
     public void findGenre() {
         assertEquals(Genre.builder().id(1).name("Комедия").build(), filmDbStorage.findGenre(1));
     }
-    // %%%%%%%%%% Russian text ends
 
     @Test
     @Sql(value = {"test-schema.sql", "test-data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
@@ -471,4 +470,5 @@ class FilmorateApplicationTests {
 
     // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-director tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
     // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-director tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+
 }

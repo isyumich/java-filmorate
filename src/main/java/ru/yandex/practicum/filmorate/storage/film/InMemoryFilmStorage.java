@@ -183,6 +183,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Director deleteDirector(int id) {
         return null;
     }
+
+    @Override
+    public void deleteFilm(long id) {
+
+    }
     // End of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's funcs %%%%%%%%% %%%%%%%%% %%%%%%%%%
 
 }
