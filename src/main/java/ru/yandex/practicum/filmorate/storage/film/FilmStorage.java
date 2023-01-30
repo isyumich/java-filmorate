@@ -43,4 +43,6 @@ public interface FilmStorage {
 
     // End of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's services %%%%%%%%% %%%%%%%%% %%%%%%%%%
 
+
+    void deleteFilm (long id);
 }

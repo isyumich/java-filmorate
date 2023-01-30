@@ -58,4 +58,9 @@ public class UserService {
         log.info(String.format("%s %d", "Запрос на получение списка друзей у пользователя", userId));
         return userStorage.getFriendsList(userId);
     }
+
+    public void deleteUser (long id){
+        log.info("Запрос на удаление пользователя по id");
+        userStorage.deleteUser(id);
+    }
 }

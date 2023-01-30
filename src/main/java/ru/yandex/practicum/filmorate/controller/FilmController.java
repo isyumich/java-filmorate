@@ -121,10 +121,14 @@ public class FilmController {
     // End of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's end points %%%%%%%%% %%%%%%%%% %%%%%%%%%
     @GetMapping(pathForFilms + "/popular")
     List<Film> findMostPopularFilms(@RequestParam(defaultValue = "10", name = "count") String limit,
-                                    @RequestParam(defaultValue = "%", name = "genreId") String genreId,
-                                    @RequestParam(defaultValue = "%", name = "year") String year) {
+                                    @RequestParam(defaultValue = "null", name = "genreId") String genreId,
+                                    @RequestParam(defaultValue = "null", name = "year") String year) {
         return filmService.findMostPopularFilms(limit, genreId, year);
     }
 
 
+    @DeleteMapping(pathForFilms+"/{id}")
+    public void delete(@PathVariable("id") long filmId) {
+        filmService.deleteFilm(filmId);
+    }
 }

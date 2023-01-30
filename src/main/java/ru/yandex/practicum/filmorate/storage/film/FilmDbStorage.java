@@ -297,21 +297,43 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public void deleteFilm(long id) {
+        filmExistCheckUp(id);
+        jdbcTemplate.update("delete   from DIRECTORS_FILMS where FILM_ID = ? ", id);
+        jdbcTemplate.update("delete   from FILM_GENRE where FILM_ID = ? ", id);
+        jdbcTemplate.update("delete   from FILM_LIKES_BY_USER where FILM_ID = ? ", id);
+        jdbcTemplate.update("delete   from FILM_REVIEWS where FILM_ID = ? ", id);
+        jdbcTemplate.update("delete   from FILMS where ID = ? ", id);
+        log.info("Удалён фильм с id : {} ", id);
+    }
+
+    @Override
     public List<Film> findMostPopularFilms(String limit, String genreId, String year) {
-        // Если список лайков пуст и не передано никаких параметров, то возвращаем все фильмы
-        if (!jdbcTemplate.queryForRowSet("SELECT * FROM FILM_LIKES_BY_USER").next() &&
-                year.equals("%") && genreId.equals("%")) {
-            return findFilms();
-        }
-        // Даже если список лайков пуст, но у пользователя есть запрос на конкретный год или жанр, то может вернуть пустой список
+
+        String clauseGenre = getClausePopularFilms(genreId, "genre_id=" + genreId);
+        String clauseYear = getClausePopularFilms(year, "EXTRACT(YEAR FROM t1.release_date)=" + year);
+
         String query = "SELECT * FROM (SELECT t1.*, t3.name as mpa_name  FROM films t1 " +
                 "LEFT JOIN film_likes_by_user t2 ON t1.id = t2.film_id " +
                 "INNER JOIN MPA t3  ON t1.mpa_id = t3.id " +
-                "INNER JOIN FILM_GENRE fg ON t1.id=fg.film_id " +
-                "WHERE GENRE_ID LIKE '" + genreId + "' AND  EXTRACT(YEAR FROM t1.release_date) LIKE '" + year + "' " +
-                "group by t1.id " +
+                "LEFT JOIN FILM_GENRE fg ON t1.id=fg.film_id " +
+                "WHERE " + clauseGenre + " AND " +clauseYear  +
+                " group by t1.id " +
                 "order by count(user_id) desc) " +
                 "limit " + limit;
         return jdbcTemplate.query(query, new FilmMapper(jdbcTemplate));
+    }
+
+    private String getClausePopularFilms(String request, String notNullClause) {
+        if (Objects.equals(request, "null")) {
+            return "true";
+        }
+        return notNullClause;
+    }
+
+    void filmExistCheckUp(long id) {
+        if (!jdbcTemplate.queryForRowSet("SELECT * FROM FILMS WHERE id = ?", id).next()) {
+            throw new NotFoundException("Film not found");
+        }
     }
 }
