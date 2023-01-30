@@ -11,7 +11,10 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
+import ru.yandex.practicum.filmorate.controller.FilmController;
+import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.service.ReviewDBService;
 import ru.yandex.practicum.filmorate.service.TypeOperations;
@@ -38,8 +41,12 @@ class FilmorateApplicationTests {
     final FilmDbStorage filmDbStorage;
     @Autowired
     final ReviewDBService reviewDBService;
+    @Autowired
+    final FilmController filmController;
+
     List<User> usersList;
     List<Film> filmsList;
+
 
     @Test
     void contextLoads() {
@@ -470,5 +477,6 @@ class FilmorateApplicationTests {
 
     // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-director tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
     // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-director tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+
 
 }

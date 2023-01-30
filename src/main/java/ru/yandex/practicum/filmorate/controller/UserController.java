@@ -26,7 +26,7 @@ public class UserController {
     }
 
     @PostMapping
-    User addNewUser(@RequestBody User user) {
+    public User addNewUser(@RequestBody User user) {
         return userService.addNewUser(user);
     }
 

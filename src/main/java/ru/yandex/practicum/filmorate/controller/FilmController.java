@@ -32,7 +32,7 @@ public class FilmController {
     }
 
     @PostMapping(pathForFilms)
-    Film addNewFilm(@RequestBody Film film) {
+    public Film addNewFilm(@RequestBody Film film) {
         return filmService.addNewFilm(film);
     }
 
@@ -48,7 +48,7 @@ public class FilmController {
     }
 
     @PutMapping(pathForFilms + pathForFilmLike)
-    Film addLikeToFilm(@PathVariable("id") long filmId, @PathVariable("userId") Long userId) {
+    public Film addLikeToFilm(@PathVariable("id") long filmId, @PathVariable("userId") Long userId) {
         return filmService.addOrDeleteLikeToFilm(filmId, userId, TypeOperations.ADD.toString());
     }
 
@@ -121,5 +121,17 @@ public class FilmController {
     }
 
     // End of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's end points %%%%%%%%% %%%%%%%%% %%%%%%%%%
+
+    @GetMapping("/search")
+    public List<Film> searchFilm(@RequestParam String query, @RequestParam List<String> by){
+        if (by.contains("director") && !by.contains("title")) {
+            return filmService.searchFilmByDirector(query,by);
+        }
+        if (!by.contains("director") && by.contains("title")) {
+            return filmService.searchFilmByTitle(query, by);
+        }
+        return filmService.searchFilmByTitleAndDirector(query,by);
+    }
+
 
 }
