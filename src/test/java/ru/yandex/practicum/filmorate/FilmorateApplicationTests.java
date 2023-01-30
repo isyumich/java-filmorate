@@ -509,6 +509,13 @@ class FilmorateApplicationTests {
                 .isPresent()
                 .hasValueSatisfying(film ->
                         assertThat(film).hasFieldOrPropertyWithValue("id", 2L));
+        int exceptionThrows = 0;
+        try {
+            Optional<List<Film>> filmsOptional = Optional.of(recommendService.getRecommendation(999L));;
+        } catch (NotFoundException e) {
+            exceptionThrows = 1;
+        }
+        assertEquals(1, exceptionThrows);
     }
 
     // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-recommendations tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%

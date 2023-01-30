@@ -5,7 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.mapper.FilmMapper;
 
 import java.util.*;
@@ -26,13 +28,18 @@ public class RecommendationService {
     }
 
     public List<Film> getRecommendation(Long userId) {
+        try {
+            userService.findUser(userId);
+        } catch (NotFoundException e) {
+            throw new NotFoundException(e.getMessage());
+        }
         LinkedHashMap<Long, List<Long>> allUsersLikes = getAllUsersLikes();
         List<Long> userLikedFilms = findUserLikes(allUsersLikes, userId);                                                      //Получаем лайки пользователя
         LinkedHashMap<Long, List<Long>> otherUsersLikedFilms = findOtherUsersLikes(allUsersLikes, userId);                           //Получаем лайки друзей
         Long otherUsersWithMutualInterests = findUsersWithMutualInterests(userLikedFilms, otherUsersLikedFilms);     //Выбираем друга, у которого будем брать рекомендацию
         List<Long> recommendation = new ArrayList<>();
         if (otherUsersLikedFilms.isEmpty()) {
-            log.info("Не удалось рекомендовать фильм: не найдены лайки от друзей пользователя id=" + userId);
+            log.info("Не удалось рекомендовать фильм: не найдены лайки от других пользователей.");
             return new ArrayList<Film>();
         }
         for (Long filmId : otherUsersLikedFilms.get(otherUsersWithMutualInterests)) {
@@ -46,12 +53,12 @@ public class RecommendationService {
     private LinkedHashMap<Long, List<Long>> getAllUsersLikes() {
         LinkedHashMap<Long, List<Long>> likedFilms = new LinkedHashMap<>();
         String sqlQuery = "SELECT user_id, film_id FROM film_likes_by_user;";
-        SqlRowSet usersFriendsLikesRows = jdbcTemplate.queryForRowSet(sqlQuery);
-        while (usersFriendsLikesRows.next()) {
-            Long userId = Long.parseLong(usersFriendsLikesRows.getString("user_id"));
+        SqlRowSet allUsersLikesRows = jdbcTemplate.queryForRowSet(sqlQuery);
+        while (allUsersLikesRows.next()) {
+            Long userId = Long.parseLong(allUsersLikesRows.getString("user_id"));
             Long filmId = 0L;
             try {
-                filmId = Long.parseLong(usersFriendsLikesRows.getString("film_id"));
+                filmId = Long.parseLong(allUsersLikesRows.getString("film_id"));
             } catch (NumberFormatException e) {
             }
             if(filmId != 0L && filmId != null) {
