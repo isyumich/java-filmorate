@@ -128,4 +128,9 @@ public class InMemoryUserStorage implements UserStorage {
         }
         return friendsSet;
     }
+
+    @Override
+    public void deleteUser(long id) {
+
+    }
 }

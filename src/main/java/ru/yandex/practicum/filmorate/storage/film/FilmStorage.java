@@ -43,4 +43,7 @@ public interface FilmStorage {
 
     // End of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's services %%%%%%%%% %%%%%%%%% %%%%%%%%%
   List <Film> getCommonFilms(long userId, long friendId);
+
+
+    void deleteFilm (long id);
 }

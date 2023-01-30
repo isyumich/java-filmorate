@@ -116,4 +116,8 @@ public class FilmService {
     public List <Film> getCommonFilms (long userId, long friendId){
         return filmStorage.getCommonFilms(userId, friendId);
     }
+    public void deleteFilm(long id){
+        log.info("Запрос на удаление фильма по id");
+        filmStorage.deleteFilm(id);
+    }
 }

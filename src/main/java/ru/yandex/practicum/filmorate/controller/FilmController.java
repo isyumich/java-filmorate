@@ -122,6 +122,10 @@ public class FilmController {
 
     // End of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's end points %%%%%%%%% %%%%%%%%% %%%%%%%%%
 
+    @DeleteMapping(pathForFilms+"/{id}")
+    public void delete(@PathVariable("id") long filmId) {
+        filmService.deleteFilm(filmId);
+    }
 
     @GetMapping(pathForFilms+"/common")
     List <Film> getCommonFilms(@RequestParam (name = "userId") long userId,
