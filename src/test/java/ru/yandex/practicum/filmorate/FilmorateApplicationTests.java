@@ -22,7 +22,8 @@ import java.time.LocalDate;
 import java.util.*;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
@@ -470,6 +471,49 @@ class FilmorateApplicationTests {
     // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-director tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
     // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-director tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
 
+    // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-remove-endpoint tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+    // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-remove-endpoint tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void removeUserTest() {
+        filmDbStorage.addOrDeleteLikeToFilm(2, 1, TypeOperations.ADD.toString());
+
+        assertEquals(filmDbStorage.findFilm(2).getCountLikes(), 1);
+
+        userDbStorage.deleteUser(1);
+
+        assertEquals(userDbStorage.findUsers().size(), 2);
+
+        assertEquals(filmDbStorage.findFilm(2).getCountLikes(), 0);
+
+        assertEquals(userDbStorage.findUsers(), List.of(userDbStorage.findUser(2), userDbStorage.findUser(3)));
+
+        assertThrows(NotFoundException.class, () -> userDbStorage.findUser(1));
+    }
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void removeFilmTest() {
+
+        filmDbStorage.addOrDeleteLikeToFilm(1, 1, TypeOperations.ADD.toString());
+
+        assertEquals(filmDbStorage.findFilm(1).getCountLikes(), 1);
+
+        filmDbStorage.deleteFilm(1);
+
+        assertEquals(filmDbStorage.findFilms().size(), 2);
+
+        assertEquals(filmDbStorage.findFilms(), List.of(filmDbStorage.findFilm(2), filmDbStorage.findFilm(3)));
+
+       assertThrows(NotFoundException.class, () -> filmDbStorage.findFilm(1));
+
+    }
+
+
+    // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-remove-endpoint tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+    // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-remove-endpoint tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
 
     // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-common-films tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
     // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-common-films tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
