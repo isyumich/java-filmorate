@@ -296,12 +296,11 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-
     @Override
     public List<Film> findMostPopularFilms(String limit, String genreId, String year) {
         // Если список лайков пуст и не передано никаких параметров, то возвращаем все фильмы
         if (!jdbcTemplate.queryForRowSet("SELECT * FROM FILM_LIKES_BY_USER").next() &&
-                genreId.equals(year)) {
+                year.equals("%") && genreId.equals("%")) {
             return findFilms();
         }
         // Даже если список лайков пуст, но у пользователя есть запрос на конкретный год или жанр, то может вернуть пустой список
@@ -312,8 +311,7 @@ public class FilmDbStorage implements FilmStorage {
                 "WHERE GENRE_ID LIKE '" + genreId + "' AND  EXTRACT(YEAR FROM t1.release_date) LIKE '" + year + "' " +
                 "group by t1.id " +
                 "order by count(user_id) desc) " +
-                "limit "+ limit;
+                "limit " + limit;
         return jdbcTemplate.query(query, new FilmMapper(jdbcTemplate));
     }
-
 }

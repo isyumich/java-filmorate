@@ -107,7 +107,7 @@ public class FilmService {
 
 
     public List<Film> findMostPopularFilms(String limit, String genreId, String year) {
-        log.info("Запрос на поиск популярных фильмов в жанре {} {} года выпуска в количестве {}", genreId, year, limit);
+        log.info("Запрос на поиск популярных фильмов в жанре {}, {} года выпуска , в количестве {}", genreId, year, limit);
         return filmStorage.findMostPopularFilms(limit, genreId, year);
     }
 
