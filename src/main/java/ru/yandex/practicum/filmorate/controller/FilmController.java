@@ -122,16 +122,8 @@ public class FilmController {
 
     // End of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's end points %%%%%%%%% %%%%%%%%% %%%%%%%%%
 
-    @GetMapping("/search")
-    public List<Film> searchFilm(@RequestParam String query, @RequestParam List<String> by){
-        if (by.contains("director") && !by.contains("title")) {
-            return filmService.searchFilmByDirector(query,by);
-        }
-        if (!by.contains("director") && by.contains("title")) {
-            return filmService.searchFilmByTitle(query, by);
-        }
-        return filmService.searchFilmByTitleAndDirector(query,by);
+    @GetMapping(pathForFilms + "/search")
+    public List<Film> searchFilm(@RequestParam("query") String fieldValue, @RequestParam("by") String parameters){
+        return filmService.searchFilmByParameters(fieldValue, parameters);
     }
-
-
 }

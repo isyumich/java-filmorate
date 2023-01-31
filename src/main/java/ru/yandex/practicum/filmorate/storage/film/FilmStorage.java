@@ -43,9 +43,5 @@ public interface FilmStorage {
 
     // End of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's services %%%%%%%%% %%%%%%%%% %%%%%%%%%
 
-    public List<Film> searchFilmByDirector(String query, List<String> values);
-
-    public List<Film> searchFilmByTitle(String query, List<String> values);
-
-    public List<Film> searchFilmByTitleAndDirector(String query, List<String> values);
+    public List<Film> searchFilmByParameters(String query, String parameters);
 }

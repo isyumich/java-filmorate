@@ -112,19 +112,9 @@ public class FilmService {
     }
     // End of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's services %%%%%%%%% %%%%%%%%% %%%%%%%%%
 
-    public List<Film> searchFilmByDirector(String query, List<String> values) {
-        log.info("Поиск фильмов по режиссеру");
-        return filmStorage.searchFilmByDirector(query, values);
-    }
-
-    public List<Film> searchFilmByTitle(String query, List<String> values) {
-        log.info("Поиск фильмов по названию");
-        return filmStorage.searchFilmByTitle(query, values);
-    }
-
-    public List<Film> searchFilmByTitleAndDirector(String query, List<String> values) {
-        log.info("Поиск фильмов по названию и режиссеру");
-        return filmStorage.searchFilmByTitleAndDirector(query,values);
+    public List<Film> searchFilmByParameters(String fieldValue, String parameters) {
+        log.info("Поиск фильмов по параметру " + parameters);
+        return filmStorage.searchFilmByParameters(fieldValue, parameters);
     }
 
 }

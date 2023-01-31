@@ -478,5 +478,19 @@ class FilmorateApplicationTests {
     // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-director tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
     // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-director tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
 
+    // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-search tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+    // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-search tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void searchFilmsTest() {
+        filmDbStorage.addOrDeleteLikeToFilm(2, 1, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(2, 2, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(2, 3, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(1, 3, TypeOperations.ADD.toString());
+        List<Film> searchFilms = List.of(filmDbStorage.findFilm(2), filmDbStorage.findFilm(1), filmDbStorage.findFilm(3));
+        assertEquals(filmDbStorage.searchFilmByParameters("testname", "title"), searchFilms);
+    }
 
+    // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-search tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+    // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-search tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
 }

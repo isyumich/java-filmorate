@@ -186,21 +186,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     // End of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's funcs %%%%%%%%% %%%%%%%%% %%%%%%%%%
 
     @Override
-    public List<Film> searchFilmByDirector(String query, List<String> values) {
-        return films.values().stream()
-                .collect(Collectors.toList()); //TODO
-    }
-
-
-    @Override
-    public List<Film> searchFilmByTitle(String query, List<String> values) {
-        return films.values().stream()
-                .collect(Collectors.toList()); //TODO
-    }
-
-
-    @Override
-    public List<Film> searchFilmByTitleAndDirector(String query, List<String> values) {
+    public List<Film> searchFilmByParameters(String fieldValue, String parameters) {
         return films.values().stream()
                 .collect(Collectors.toList()); //TODO
     }
