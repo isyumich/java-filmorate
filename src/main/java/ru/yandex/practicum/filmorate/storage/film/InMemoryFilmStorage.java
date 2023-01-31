@@ -185,4 +185,8 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
     // End of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's funcs %%%%%%%%% %%%%%%%%% %%%%%%%%%
 
+    @Override
+    public List<Film> searchFilmByParameters(String query, String parameters) {
+        return null;
+    }
 }

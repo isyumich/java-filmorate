@@ -323,4 +323,36 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
+    @Override
+    public List<Film> searchFilmByParameters(String fieldValue, String parameters) {
+        FilmMapper mapper = new FilmMapper(jdbcTemplate);
+        String causeSearch = getCauseForSearch(fieldValue, parameters);
+        String sql = "SELECT f.*, mpa.name as mpa_name\n" +
+                "FROM films f\n" +
+                "LEFT JOIN MPA mpa ON f.mpa_id = mpa.id\n" +
+                "LEFT JOIN film_likes_by_user flu ON f.id = flu.film_id\n" +
+                "LEFT join directors_films df ON f.id = df.film_id\n" +
+                "LEFT join directors d ON df.director_id = d.id\n" +
+                "WHERE " + causeSearch + "\n" +
+                "GROUP BY f.id\n" +
+                "ORDER BY COUNT(flu.user_id) DESC";
+        System.out.println(jdbcTemplate.query(sql, (rs, rowNum) -> mapper.mapRow(rs, rowNum)));
+        return jdbcTemplate.query(sql, (rs, rowNum) -> mapper.mapRow(rs, rowNum));
+    }
+
+    private String getCauseForSearch (String fieldValue, String parameters) {
+        switch (parameters) {
+            case ("director"):
+                System.out.println("Поиск по директору");
+                System.out.println("LOWER(f.name) LIKE LOWER('%" + fieldValue + "%')");
+                return "LOWER(d.name) LIKE LOWER('%" + fieldValue + "%')";
+            case ("title"):
+                return "LOWER(f.name) LIKE LOWER('%" + fieldValue + "%')";
+            case ("director,title"):
+            case ("title,director"):
+                return "LOWER(f.name) LIKE LOWER('%" + fieldValue + "%') OR " + "LOWER(d.name) LIKE LOWER('%" + fieldValue + "%')";
+            default:
+                return "true";
+        }
+    }
 }

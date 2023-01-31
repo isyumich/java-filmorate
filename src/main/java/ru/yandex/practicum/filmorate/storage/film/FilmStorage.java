@@ -43,4 +43,5 @@ public interface FilmStorage {
 
     // End of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's services %%%%%%%%% %%%%%%%%% %%%%%%%%%
 
+    List<Film> searchFilmByParameters(String query, String parameters);
 }
