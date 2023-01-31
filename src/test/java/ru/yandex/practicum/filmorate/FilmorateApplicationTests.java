@@ -11,10 +11,15 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
+import ru.yandex.practicum.filmorate.controller.RecommendationController;
+import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.ReviewDBService;
 import ru.yandex.practicum.filmorate.service.TypeOperations;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.service.RecommendationService;
 import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 
@@ -37,6 +42,10 @@ class FilmorateApplicationTests {
     final FilmDbStorage filmDbStorage;
     @Autowired
     final ReviewDBService reviewDBService;
+    final UserService userService;
+    final FilmService filmService;
+    final RecommendationController recommendController;
+    final RecommendationService recommendService;
     List<User> usersList;
     List<Film> filmsList;
 
@@ -520,4 +529,45 @@ class FilmorateApplicationTests {
 
     // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-feed tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
     // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-feed tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+  
+      // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-recommendations tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+    // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-recommendations tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    void getRecommendationsTest() {
+        usersList = createTestUsers();
+        for (User user : usersList) {
+            userDbStorage.addNewUser(user);
+        }
+        filmsList = createTestFilms();
+        for (Film film : filmsList) {
+            filmDbStorage.addNewFilm(film);
+        }
+
+        filmService.addOrDeleteLikeToFilm(1L, 2L, "ADD");
+
+        Optional<Film> filmOptional = Optional.of(recommendService.getRecommendation(1L).get(0));
+        assertThat(filmOptional)
+                .isPresent()
+                .hasValueSatisfying(film ->
+                        assertThat(film).hasFieldOrPropertyWithValue("id", 1L));
+        filmService.addOrDeleteLikeToFilm(1L, 2L, "DELETE");
+        filmService.addOrDeleteLikeToFilm(2L, 2L, "ADD");
+        filmOptional = Optional.of(recommendService.getRecommendation(1L).get(0));
+        assertThat(filmOptional)
+                .isPresent()
+                .hasValueSatisfying(film ->
+                        assertThat(film).hasFieldOrPropertyWithValue("id", 2L));
+        int exceptionThrows = 0;
+        try {
+            Optional<List<Film>> filmsOptional = Optional.of(recommendService.getRecommendation(999L));;
+        } catch (NotFoundException e) {
+            exceptionThrows = 1;
+        }
+        assertEquals(1, exceptionThrows);
+    }
+
+    // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-recommendations tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+    // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-recommendations tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
 }
