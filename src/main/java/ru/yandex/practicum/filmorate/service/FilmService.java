@@ -112,4 +112,8 @@ public class FilmService {
     }
     // End of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's services %%%%%%%%% %%%%%%%%% %%%%%%%%%
 
+    public List<Film> searchFilmByParameters(String fieldValue, String parameters) {
+        log.info("Поиск фильмов по параметру " + parameters);
+        return filmStorage.searchFilmByParameters(fieldValue, parameters);
+    }
 }

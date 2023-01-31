@@ -122,4 +122,8 @@ public class FilmController {
 
     // End of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's end points %%%%%%%%% %%%%%%%%% %%%%%%%%%
 
+    @GetMapping(pathForFilms + "/search")
+    public List<Film> searchFilm(@RequestParam("query") String fieldValue, @RequestParam("by") String parameters){
+        return filmService.searchFilmByParameters(fieldValue, parameters);
+    }
 }
