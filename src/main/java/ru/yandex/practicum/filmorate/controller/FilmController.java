@@ -35,10 +35,9 @@ public class FilmController {
     Film addNewFilm(@RequestBody Film film) {
         return filmService.addNewFilm(film);
     }
-
-    @DeleteMapping(pathForFilms + pathForFilmLike)
-    Film deleteLikeFromFilm(@PathVariable("id") long filmId, @PathVariable("userId") Long userId) {
-        return filmService.addOrDeleteLikeToFilm(filmId, userId, TypeOperations.DELETE.toString());
+    @PostMapping(pathForDirector)
+    Director createDirector(@RequestBody Director director) {
+        return filmService.createDirector(director);
     }
 
 
@@ -46,84 +45,76 @@ public class FilmController {
     Film updateFilm(@RequestBody Film film) {
         return filmService.updateFilm(film);
     }
-
     @PutMapping(pathForFilms + pathForFilmLike)
     Film addLikeToFilm(@PathVariable("id") long filmId, @PathVariable("userId") Long userId) {
         return filmService.addOrDeleteLikeToFilm(filmId, userId, TypeOperations.ADD.toString());
     }
-
+    @PutMapping(pathForDirector)
+    Director updateDirector(@RequestBody Director director) {
+        return filmService.updateDirector(director);
+    }
 
     @GetMapping(pathForFilms)
     List<Film> findFilms() {
         return new ArrayList<>(filmService.findFilms());
     }
-
     @GetMapping(pathForFilms + "/{id}")
     Film findFilm(@PathVariable("id") long filmId) {
         return filmService.findFilm(filmId);
     }
-
     @GetMapping(pathForFilms + "/popular")
     List<Film> findMostPopularFilms(@RequestParam(defaultValue = "10", name = "count") String countFilms) {
         return filmService.findMostPopularFilms(countFilms);
     }
-
     @GetMapping(pathForGenres)
     List<Genre> findGenres() {
         return filmService.findAllGenres();
     }
-
     @GetMapping(pathForGenres + "/{id}")
     Genre findGenre(@PathVariable("id") int genreId) {
         return filmService.findGenre(genreId);
     }
-
     @GetMapping(pathForMPA)
     List<MPA> findAllMPA() {
         return filmService.findAllMPA();
     }
-
     @GetMapping(pathForMPA + "/{id}")
     MPA findMPA(@PathVariable("id") int MPAId) {
         return filmService.findMPA(MPAId);
     }
-
-    // Start of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's end points %%%%%%%%% %%%%%%%%% %%%%%%%%%
     @GetMapping(pathForFilms + "/director/{directorId}")
     List<Film> getDirectorSortedFilms(@PathVariable("directorId") int id, @RequestParam(name = "sortBy") String param) {
         System.out.println("FLAG-00- ID-- " + id);
         return filmService.getDirectorSortedFilms(id, param);
     }
-
     @GetMapping(pathForDirector)
     List<Director> getAllDirectors() {
         return filmService.getAllDirectors();
     }
-
     @GetMapping(pathForDirector + "/{id}")
     Director getDirectorById(@PathVariable("id") int id) {
         return filmService.getDirectorById(id);
     }
-
-    @PostMapping(pathForDirector)
-    Director createDirector(@RequestBody Director director) {
-        return filmService.createDirector(director);
+    @GetMapping(pathForFilms + "/search")
+    public List<Film> searchFilm(@RequestParam("query") String fieldValue, @RequestParam("by") String parameters){
+        return filmService.searchFilmByParameters(fieldValue, parameters);
     }
-
-    @PutMapping(pathForDirector)
-    Director updateDirector(@RequestBody Director director) {
-        return filmService.updateDirector(director);
+    @GetMapping(pathForFilms+"/common")
+    List <Film> getCommonFilms(@RequestParam (name = "userId") long userId,
+                               @RequestParam(name = "friendId") long friendId){
+        return filmService.getCommonFilms(userId, friendId);
     }
 
     @DeleteMapping(pathForDirector + "/{id}")
     Director deleteDirector(@PathVariable("id") int id) {
         return filmService.deleteDirector(id);
     }
-
-    // End of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's end points %%%%%%%%% %%%%%%%%% %%%%%%%%%
-
-    @GetMapping(pathForFilms + "/search")
-    public List<Film> searchFilm(@RequestParam("query") String fieldValue, @RequestParam("by") String parameters){
-        return filmService.searchFilmByParameters(fieldValue, parameters);
+    @DeleteMapping(pathForFilms + pathForFilmLike)
+    Film deleteLikeFromFilm(@PathVariable("id") long filmId, @PathVariable("userId") Long userId) {
+        return filmService.addOrDeleteLikeToFilm(filmId, userId, TypeOperations.DELETE.toString());
+    }
+    @DeleteMapping(pathForFilms+"/{id}")
+    public void delete(@PathVariable("id") long filmId) {
+        filmService.deleteFilm(filmId);
     }
 }

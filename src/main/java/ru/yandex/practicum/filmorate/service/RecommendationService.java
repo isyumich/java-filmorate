@@ -34,9 +34,9 @@ public class RecommendationService {
             throw new NotFoundException(e.getMessage());
         }
         LinkedHashMap<Long, List<Long>> allUsersLikes = getAllUsersLikes();
-        List<Long> userLikedFilms = findUserLikes(allUsersLikes, userId);                                                      //Получаем лайки пользователя
-        LinkedHashMap<Long, List<Long>> otherUsersLikedFilms = findOtherUsersLikes(allUsersLikes, userId);                           //Получаем лайки друзей
-        Long otherUsersWithMutualInterests = findUsersWithMutualInterests(userLikedFilms, otherUsersLikedFilms);     //Выбираем друга, у которого будем брать рекомендацию
+        List<Long> userLikedFilms = findUserLikes(allUsersLikes, userId);
+        LinkedHashMap<Long, List<Long>> otherUsersLikedFilms = findOtherUsersLikes(allUsersLikes, userId);
+        Long otherUsersWithMutualInterests = findUsersWithMutualInterests(userLikedFilms, otherUsersLikedFilms);
         List<Long> recommendation = new ArrayList<>();
         if (otherUsersLikedFilms.isEmpty()) {
             log.info("Не удалось рекомендовать фильм: не найдены лайки от других пользователей.");

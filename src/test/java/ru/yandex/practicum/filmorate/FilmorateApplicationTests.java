@@ -246,7 +246,6 @@ class FilmorateApplicationTests {
         assertEquals(filmDbStorage.findMostPopularFilms("10"), mostPopularFilms);
     }
 
-    // %%%%%%%%%% Russian text
     @Test
     @Sql(value = {"test-schema.sql", "test-data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     public void findAllGenres() {
@@ -307,9 +306,6 @@ class FilmorateApplicationTests {
                 .mpa(MPA.builder().id(mpaId).name(mpaName).build())
                 .build();
     }
-
-    // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-reviews tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
-    // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-reviews tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
 
     private Review createReview (String content, Boolean isPositive, Integer userId, Integer filmId){
         Review review = new Review();
@@ -395,11 +391,6 @@ class FilmorateApplicationTests {
         Assertions.assertEquals(review2.getUseful(), 1);
     }
 
-    // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-reviews tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
-    // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-reviews tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
-
-    // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-director tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
-    // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-director tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
     public void createTestDirectors() {
         filmDbStorage.createDirector(createTestDirector(1, "Director Name1"));
         filmDbStorage.createDirector(createTestDirector(2, "Director Name2"));
@@ -476,13 +467,6 @@ class FilmorateApplicationTests {
         assertEquals("Director с id 3 не найден", exception.getMessage());
     }
 
-    // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-director tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
-    // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-director tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
-
-    // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-feed tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
-    // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-feed tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
-
-
     @Test
     @Sql(value = {"test-schema.sql", "test-data.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     public void addToFeedFriendsEvents() {
@@ -527,12 +511,6 @@ class FilmorateApplicationTests {
         );
     }
 
-    // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-feed tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
-    // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-feed tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
-  
-      // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-recommendations tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
-    // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-recommendations tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
-
     @Test
     @Sql(value = {"test-schema.sql", "test-data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     void getRecommendationsTest() {
@@ -568,9 +546,77 @@ class FilmorateApplicationTests {
         assertEquals(1, exceptionThrows);
     }
 
-    // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-recommendations tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
-    // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-recommendations tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void removeUserTest() {
+        filmDbStorage.addOrDeleteLikeToFilm(2, 1, TypeOperations.ADD.toString());
 
+        assertEquals(filmDbStorage.findFilm(2).getCountLikes(), 1);
+
+        userDbStorage.deleteUser(1);
+
+        assertEquals(userDbStorage.findUsers().size(), 2);
+
+        assertEquals(filmDbStorage.findFilm(2).getCountLikes(), 0);
+
+        assertEquals(userDbStorage.findUsers(), List.of(userDbStorage.findUser(2), userDbStorage.findUser(3)));
+
+        assertThrows(NotFoundException.class, () -> userDbStorage.findUser(1));
+    }
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void removeFilmTest() {
+
+        filmDbStorage.addOrDeleteLikeToFilm(1, 1, TypeOperations.ADD.toString());
+
+        assertEquals(filmDbStorage.findFilm(1).getCountLikes(), 1);
+
+        filmDbStorage.deleteFilm(1);
+
+        assertEquals(filmDbStorage.findFilms().size(), 2);
+
+        assertEquals(filmDbStorage.findFilms(), List.of(filmDbStorage.findFilm(2), filmDbStorage.findFilm(3)));
+
+        assertThrows(NotFoundException.class, () -> filmDbStorage.findFilm(1));
+
+    }
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void emptyCommonFilms() {
+        filmDbStorage.addOrDeleteLikeToFilm(1, 1, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(1, 3, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(2, 1, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(2, 3, TypeOperations.ADD.toString());
+
+        assertTrue(filmDbStorage.getCommonFilms(1,2).isEmpty());
+
+    }
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void returnCommonFilms() {
+        filmDbStorage.addOrDeleteLikeToFilm(1, 1, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(1, 2, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(2, 1, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(2, 3, TypeOperations.ADD.toString());
+
+        assertEquals(filmDbStorage.getCommonFilms(1,2), List.of(filmDbStorage.findFilm(1)));
+
+    }
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void returnEmptyList() {
+        filmDbStorage.addOrDeleteLikeToFilm(1, 1, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(1, 2, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(2, 1, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(2, 3, TypeOperations.ADD.toString());
+
+        assertEquals(filmDbStorage.getCommonFilms(1,2), List.of(filmDbStorage.findFilm(1)));
+
+        filmDbStorage.addOrDeleteLikeToFilm(1, 2, TypeOperations.DELETE.toString());
+
+        assertTrue(filmDbStorage.getCommonFilms(1,2).isEmpty());
+    }
     @Test
     @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     public void searchFilmsTest() {

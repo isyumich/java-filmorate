@@ -19,6 +19,6 @@ public interface UserStorage {
     List<User> getMutualFriends(long firstUserId, long secondUserId);
 
     List<User> getFriendsList(long userId);
-
     List<Event> getFeed(long userId);
+    void deleteUser(long id);
 }

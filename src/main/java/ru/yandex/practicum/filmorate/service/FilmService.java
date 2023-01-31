@@ -79,8 +79,6 @@ public class FilmService {
         return filmStorage.findMPA(mpaId);
     }
 
-    // Start of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's services %%%%%%%%% %%%%%%%%% %%%%%%%%%
-
     public List<Film> getDirectorSortedFilms(int id, String param){
         log.info("Запрос на отсортированный список фильмов");
         return filmStorage.getDirectorSortedFilms(id, param);
@@ -110,7 +108,14 @@ public class FilmService {
         log.info("Запрос на удаление режиссера по id");
         return filmStorage.deleteDirector(id);
     }
-    // End of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's services %%%%%%%%% %%%%%%%%% %%%%%%%%%
+
+    public List <Film> getCommonFilms (long userId, long friendId){
+        return filmStorage.getCommonFilms(userId, friendId);
+    }
+    public void deleteFilm(long id){
+        log.info("Запрос на удаление фильма по id");
+        filmStorage.deleteFilm(id);
+    }
 
     public List<Film> searchFilmByParameters(String fieldValue, String parameters) {
         log.info("Поиск фильмов по параметру " + parameters);

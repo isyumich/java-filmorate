@@ -123,13 +123,13 @@ public class UserDbStorage implements UserStorage {
                 break;
             case "ADD":
                 int countLinesSelect = jdbcTemplate.queryForObject("SELECT COUNT(user_id) FROM friends_list WHERE user_id = ? and friend_id = ?;", Integer.class, firstUserId, secondUserId);
-                if (countLinesSelect > 0) {
-                    throw new AlreadyExistValueException(String.format("%s %d %s %d", "Пользователь с id", firstUserId, "уже находится в друзьях пользователь с id", secondUserId));
-                }
-                jdbcTemplate.update("INSERT INTO friends_list (user_id, friend_id) VALUES (?, ?);", firstUserId, secondUserId);
-                log.info(String.format("%s %d %s %d", "Пользователь с id", firstUserId, "добавил в друзья пользователя с id", secondUserId));
                 addToFeedAddFriend(firstUserId, secondUserId);
-                break;
+                if (countLinesSelect == 0) {
+                    jdbcTemplate.update("INSERT INTO friends_list (user_id, friend_id) VALUES (?, ?);", firstUserId, secondUserId);
+                    log.info(String.format("%s %d %s %d", "Пользователь с id", firstUserId, "добавил в друзья пользователя с id", secondUserId));
+                    //addToFeedAddFriend(firstUserId, secondUserId);
+                    break;
+                }
             default:
                 break;
         }
@@ -157,6 +157,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     public List<User> getFriendsList(long userId) {
+        findUser(userId);
         String query = "SELECT * FROM users WHERE id IN (SELECT friend_id FROM friends_list WHERE user_id = ?);";
         return jdbcTemplate.query(query, new UserMapper(jdbcTemplate), userId);
     }
@@ -170,8 +171,8 @@ public class UserDbStorage implements UserStorage {
                 "e1.entity_id, " +
                 "e1.date_time " +
                 "FROM events_history e1 " +
-                "INNER JOIN event_types e2 ON e1.event_type_id = e2.id " +
-                "INNER JOIN event_operations_types e3 ON e1.operations_type_id = e3.id " +
+                "LEFT JOIN event_types e2 ON e1.event_type_id = e2.id " +
+                "LEFT JOIN event_operations_types e3 ON e1.operations_type_id = e3.id " +
                 "WHERE e1.user_id= ?;";
         return jdbcTemplate.query(query, new EventMapper(), userId);
     }
@@ -189,5 +190,19 @@ public class UserDbStorage implements UserStorage {
         }
     }
 
+    @Override
+    public void deleteUser(long id) {
+        userExistCheckUp(id);
+//        jdbcTemplate.update("DELETE FROM FILM_LIKES_BY_USER WHERE USER_ID = ? ", id);
+//        jdbcTemplate.update("DELETE FROM FRIENDS_LIST WHERE USER_ID = ? ", id);
+//        jdbcTemplate.update("DELETE FROM FRIENDS_LIST WHERE FRIEND_ID = ? ", id);
+        jdbcTemplate.update("DELETE FROM USERS WHERE ID = ? ", id);
+        log.info("Удалён пользователь с id : {} ", id);
+    }
 
+    void userExistCheckUp(long id) {
+        if (!jdbcTemplate.queryForRowSet("SELECT * FROM USERS WHERE id = ?", id).next()) {
+            throw new NotFoundException("User not found");
+        }
+    }
 }

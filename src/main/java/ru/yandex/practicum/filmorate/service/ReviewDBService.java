@@ -2,12 +2,17 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.film.mapper.FilmMapper;
+import ru.yandex.practicum.filmorate.storage.user.mapper.UserMapper;
 
 import java.sql.Date;
 import java.sql.ResultSet;
@@ -28,6 +33,15 @@ public class ReviewDBService {
     }
 
     public Review addReview(Review review) {
+        if (review.getUserId() == null || review.getFilmId() == null) {
+            throw new ValidationException("Передано пустое значение пользователя или фильма");
+        }
+        try {
+            User user = jdbcTemplate.queryForObject("SELECT * FROM users WHERE id = ?;", new UserMapper(jdbcTemplate), review.getUserId());
+            Film film = jdbcTemplate.queryForObject("SELECT f.*, mpa.name AS mpa_name FROM films f LEFT JOIN MPA mpa ON f.mpa_id = mpa.id WHERE f.id = ?;", new FilmMapper(jdbcTemplate), review.getFilmId());
+        } catch (EmptyResultDataAccessException e) {
+            throw new NotFoundException(String.format("%s %d %s %d %s", "Пользователь с id", review.getUserId(), "или фильм с id", review.getFilmId(), "не найден"));
+        }
         reviewValidation(review);
         jdbcTemplate.update("INSERT INTO film_reviews (content, is_positive, user_id, film_id, useful) VALUES (?, ?, ?, ?, ?)", review.getContent(), review.getIsPositive(), review.getUserId(), review.getFilmId(), review.getUseful());
         SqlRowSet reviewSet = jdbcTemplate.queryForRowSet("SELECT * FROM film_reviews WHERE user_id = ? AND film_id = ?", review.getUserId(), review.getFilmId());
@@ -91,9 +105,6 @@ public class ReviewDBService {
         usefulUpdate(id);
     }
 
-
-    // %%%%%%%%%% %%%%%%%%%% additional methods %%%%%%%%%% %%%%%%%%%%
-
     public Review getReviewWithId (ResultSet resultSet) throws SQLException {
         return findReviewById(resultSet.getInt("id"));
     }
@@ -115,22 +126,8 @@ public class ReviewDBService {
     }
 
     void reviewValidation(Review review) {
-        userExistCheckUp(review.getUserId());
-        filmExistCheckUp(review.getFilmId());
-         if (review.getContent() == null || review.getIsPositive() == null || review.getUserId() == null || review.getFilmId() == null) {
+         if (review.getContent() == null || review.getIsPositive() == null/* || review.getUserId() == null || review.getFilmId() == null*/) {
             throw new ValidationException("Validation Exception");
-        }
-    }
-
-    void userExistCheckUp(int userId){
-        if(!jdbcTemplate.queryForRowSet("SELECT * FROM users WHERE id = ?", userId).next()) {
-            throw new NotFoundException("Review not found");
-        }
-    }
-
-    void filmExistCheckUp(int filmId){
-        if(!jdbcTemplate.queryForRowSet("SELECT * FROM films WHERE id = ?", filmId).next()) {
-            throw new NotFoundException("Review not found");
         }
     }
 

@@ -134,4 +134,9 @@ public class InMemoryUserStorage implements UserStorage {
     public List<Event> getFeed(long userId) {
         return null;
     }
+
+    @Override
+    public void deleteUser(long id) {
+
+    }
 }

@@ -64,4 +64,9 @@ public class UserService {
         log.info(String.format("%s %d", "Запрос на получение ленты событий пользователя", userId));
         return userStorage.getFeed(userId);
     }
+
+    public void deleteUser (long id){
+        log.info("Запрос на удаление пользователя по id");
+        userStorage.deleteUser(id);
+    }
 }

@@ -135,13 +135,12 @@ public class FilmDbStorage implements FilmStorage {
                 break;
             case ("ADD"):
                 int countLinesSelect = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM film_likes_by_user where film_id = ? and user_id = ?;", Integer.class, filmId, userId);
-                if (countLinesSelect > 0) {
-                    throw new AlreadyExistValueException(String.format("%s %d %s %d", "Пользователь с id", userId, "уже поставил лайк фильму с id", filmId));
-                }
-                jdbcTemplate.update("INSERT INTO film_likes_by_user VALUES (?, ?);", filmId, userId);
-                log.info(String.format("%s %d %s %d", "У фильма с id", filmId, "добавлен лайк от пользователя", userId));
                 addToFeedAddLike(userId, filmId);
-                break;
+                if (countLinesSelect == 0) {
+                    jdbcTemplate.update("INSERT INTO film_likes_by_user VALUES (?, ?);", filmId, userId);
+                    log.info(String.format("%s %d %s %d", "У фильма с id", filmId, "добавлен лайк от пользователя", userId));
+                    break;
+               }
             default:
                 break;
         }
@@ -205,7 +204,6 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-    // Start of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's funcs %%%%%%%%% %%%%%%%%% %%%%%%%%%
     @Override
     public List<Film> getDirectorSortedFilms(int id, String param) {
         directorExistCheckUp(id);
@@ -273,7 +271,6 @@ public class FilmDbStorage implements FilmStorage {
         log.info(String.format("%s %d %s", "Режиссер с id ", id, " успешно удален"));
         return director;
     }
-    // End of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's funcs %%%%%%%%% %%%%%%%%% %%%%%%%%%
 
     private void checkLikesSet(Film film) {
         if (film.getUsersWhoLiked() == null) {
@@ -298,7 +295,6 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-    // %%%%%%%%% %%%%%%%%% %%%%%%%%% Director funcs checkDirectorList %%%%%%%%% %%%%%%%%% %%%%%%%%%
     private void checkDirectorList(Film film) {
         if (film.getDirectors() == null) {
             film.setDirectors(new ArrayList<>());
@@ -321,6 +317,31 @@ public class FilmDbStorage implements FilmStorage {
         if(!jdbcTemplate.queryForRowSet("SELECT * FROM directors WHERE id = ?", id).next()) {
             throw new NotFoundException("Director not found");
         }
+    }
+
+    @Override
+    public void deleteFilm(long id) {
+        filmExistCheckUp(id);
+//        jdbcTemplate.update("delete   from DIRECTORS_FILMS where FILM_ID = ? ", id);
+//        jdbcTemplate.update("delete   from FILM_GENRE where FILM_ID = ? ", id);
+//        jdbcTemplate.update("delete   from FILM_LIKES_BY_USER where FILM_ID = ? ", id);
+//        jdbcTemplate.update("delete   from FILM_REVIEWS where FILM_ID = ? ", id);
+        jdbcTemplate.update("delete   from FILMS where ID = ? ", id);
+        log.info("Удалён фильм с id : {} ", id);
+    }
+
+    @Override
+    public List<Film> getCommonFilms(long userId, long friendId) {
+        String query = ("SELECT t1.*, t3.name as mpa_name FROM films t1 " +
+                "LEFT JOIN film_likes_by_user t2 ON t1.id = t2.film_id " +
+                "INNER JOIN MPA t3 ON t1.mpa_id = t3.id" +
+                " WHERE t1.ID IN " +
+                "(SELECT t4.FILM_ID  FROM FILM_LIKES_BY_USER AS t4 " +
+                "LEFT JOIN film_likes_by_user t2 ON t4.FILM_ID =t2.FILM_ID" +
+                " WHERE (t4.USER_id=? AND t2.user_id = ?))" +
+                "group by t1.id order by count(user_id) desc");
+
+        return jdbcTemplate.query(query, new FilmMapper(jdbcTemplate), userId, friendId);
     }
 
     @Override
@@ -353,6 +374,12 @@ public class FilmDbStorage implements FilmStorage {
                 return "LOWER(f.name) LIKE LOWER('%" + fieldValue + "%') OR " + "LOWER(d.name) LIKE LOWER('%" + fieldValue + "%')";
             default:
                 return "true";
+        }
+    }
+
+    void filmExistCheckUp (long id){
+        if(!jdbcTemplate.queryForRowSet("SELECT * FROM FILMS WHERE id = ?", id).next()) {
+            throw new NotFoundException("Film not found");
         }
     }
 }

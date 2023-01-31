@@ -28,7 +28,6 @@ public interface FilmStorage {
 
     MPA findMPA(int mpaId);
 
-    // Start of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's funcs %%%%%%%%% %%%%%%%%% %%%%%%%%%
     List<Film> getDirectorSortedFilms(int id, String param);
 
     List<Director> getAllDirectors();
@@ -41,7 +40,8 @@ public interface FilmStorage {
 
     Director deleteDirector(int id);
 
-    // End of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's services %%%%%%%%% %%%%%%%%% %%%%%%%%%
+    List <Film> getCommonFilms(long userId, long friendId);
+    void deleteFilm (long id);
 
     List<Film> searchFilmByParameters(String query, String parameters);
 }

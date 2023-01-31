@@ -153,7 +153,6 @@ public class InMemoryFilmStorage implements FilmStorage {
         }
     }
 
-    // Start of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's funcs %%%%%%%%% %%%%%%%%% %%%%%%%%%
     @Override
     public List<Film> getDirectorSortedFilms(int id, String param) {
         return null;
@@ -183,7 +182,16 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Director deleteDirector(int id) {
         return null;
     }
-    // End of %%%%%%%%% %%%%%%%%% %%%%%%%%% Director's funcs %%%%%%%%% %%%%%%%%% %%%%%%%%%
+
+    @Override
+    public void deleteFilm(long id) {
+
+    }
+
+    @Override
+    public List<Film> getCommonFilms(long userId, long friendId) {
+        return null;
+    }
 
     @Override
     public List<Film> searchFilmByParameters(String query, String parameters) {
