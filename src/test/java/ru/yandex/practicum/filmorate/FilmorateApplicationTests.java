@@ -27,8 +27,7 @@ import java.time.LocalDate;
 import java.util.*;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
@@ -480,7 +479,58 @@ class FilmorateApplicationTests {
     // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-director tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
     // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-director tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
 
-    // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-recommendations tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+    // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-feed tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+    // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-feed tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void addToFeedFriendsEvents() {
+        userDbStorage.addOrDeleteToFriends(1, 2, TypeOperations.ADD.toString());
+        userDbStorage.addOrDeleteToFriends(1, 2, TypeOperations.DELETE.toString());
+        List<Event> feed = userDbStorage.getFeed(1);
+        assertAll(
+                () -> assertEquals(2, feed.size()),
+                () -> assertEquals(1, feed.get(0).getUserId()),
+                () -> assertEquals("ADD", feed.get(0).getOperation()),
+                () -> assertEquals("FRIEND", feed.get(1).getEventType()),
+                () -> assertEquals(2, feed.get(0).getEntityId())
+        );
+    }
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void addToFeedLikeEvents() {
+        filmDbStorage.addOrDeleteLikeToFilm(1, 1, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(1, 1, TypeOperations.DELETE.toString());
+        List<Event> feed = userDbStorage.getFeed(1);
+        assertAll(
+                () -> assertEquals(2, feed.size()),
+                () -> assertEquals(1, feed.get(0).getUserId()),
+                () -> assertEquals("ADD", feed.get(0).getOperation()),
+                () -> assertEquals("LIKE", feed.get(1).getEventType()),
+                () -> assertEquals(1, feed.get(0).getEntityId())
+        );
+    }
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void addToFeedReviewEvents() {
+        addReviewTest();
+        List<Event> feed = userDbStorage.getFeed(1);
+        assertAll(
+                () -> assertEquals(2, feed.size()),
+                () -> assertEquals(1, feed.get(0).getUserId()),
+                () -> assertEquals("ADD", feed.get(0).getOperation()),
+                () -> assertEquals("REVIEW", feed.get(1).getEventType()),
+                () -> assertEquals(4, feed.get(1).getEntityId())
+        );
+    }
+
+    // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-feed tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+    // End Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-feed tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
+  
+      // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-recommendations tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
     // Begin Of %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% add-recommendations tests %%%%%%%%%% %%%%%%%%%% %%%%%%%%%%
 
     @Test

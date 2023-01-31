@@ -22,10 +22,13 @@ import ru.yandex.practicum.filmorate.validation.FilmValidation;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+
+import static ru.yandex.practicum.filmorate.service.Constants.*;
 
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -128,6 +131,7 @@ public class FilmDbStorage implements FilmStorage {
                     throw new NotFoundException(String.format("%s %d %s %d", "Пользователь с id", userId, "не ставил лайк фильму с id", filmId));
                 }
                 log.info(String.format("%s %d %s %d", "У фильма с id", filmId, "удалён лайк от пользователя", userId));
+                addToFeedDeleteLike(userId, filmId);
                 break;
             case ("ADD"):
                 int countLinesSelect = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM film_likes_by_user where film_id = ? and user_id = ?;", Integer.class, filmId, userId);
@@ -136,11 +140,24 @@ public class FilmDbStorage implements FilmStorage {
                 }
                 jdbcTemplate.update("INSERT INTO film_likes_by_user VALUES (?, ?);", filmId, userId);
                 log.info(String.format("%s %d %s %d", "У фильма с id", filmId, "добавлен лайк от пользователя", userId));
+                addToFeedAddLike(userId, filmId);
                 break;
             default:
                 break;
         }
         return film;
+    }
+
+    private void addToFeedDeleteLike(long userId, long filmId) {
+        String query = "INSERT INTO events_history (user_id, event_type_id, operations_type_id, entity_id, date_time) " +
+                "VALUES (?, ?, ?, ?, ?)";
+        jdbcTemplate.update(query, userId, EVENT_TYPE_LIKE, OPERATION_TYPE_DELETE, filmId, Date.from(Instant.now()));
+    }
+
+    private void addToFeedAddLike(long userId, long filmId) {
+        String query = "INSERT INTO events_history (user_id, event_type_id, operations_type_id, entity_id, date_time) " +
+                "VALUES (?, ?, ?, ?, ?)";
+        jdbcTemplate.update(query, userId, EVENT_TYPE_LIKE, OPERATION_TYPE_ADD,filmId, Date.from(Instant.now()));
     }
 
     @Override

@@ -8,9 +8,14 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Review;
+
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.List;
+
+import static ru.yandex.practicum.filmorate.service.Constants.*;
 
 @Data
 @Repository
@@ -30,6 +35,7 @@ public class ReviewDBService {
             review.setReviewId(reviewSet.getInt("id"));
             log.info("Film has been created, ID: {}", review.getReviewId());
         }
+        addToFeedAddReview(review.getUserId(), review.getReviewId());
         return review;
     }
 
@@ -57,9 +63,11 @@ public class ReviewDBService {
     public Review updateReview(Review review) {
         if(jdbcTemplate.queryForRowSet("SELECT * FROM film_reviews WHERE id = ?", review.getReviewId()).next()) {
             jdbcTemplate.update("MERGE INTO film_reviews (id, content, is_positive) KEY (id) VALUES (?, ?, ?)",review.getReviewId(), review.getContent(), review.getIsPositive());
+            addToFeedUpdateReview(getUserIdFromReviewId(review.getReviewId()), review.getReviewId());
         } else {
             throw new NotFoundException("Review not found");
         }
+
         return findReviewById(review.getReviewId());
     }
 
@@ -70,6 +78,7 @@ public class ReviewDBService {
 
     public void removeReviewById(int id) {
         if(jdbcTemplate.queryForRowSet("SELECT * FROM film_reviews WHERE id = ?", id).next()) {
+            addToFeedDeleteReview(id);
             jdbcTemplate.update("DELETE FROM films_reviews_like WHERE review_id = ?", id);
             jdbcTemplate.update("DELETE FROM film_reviews WHERE id = ?", id);
         } else {
@@ -123,6 +132,30 @@ public class ReviewDBService {
         if(!jdbcTemplate.queryForRowSet("SELECT * FROM films WHERE id = ?", filmId).next()) {
             throw new NotFoundException("Review not found");
         }
+    }
+
+    private void addToFeedAddReview(Integer userId, int reviewId) {
+        String query = "INSERT INTO events_history (user_id, event_type_id, operations_type_id, entity_id, date_time) " +
+                "VALUES (?, ?, ?, ?, ?)";
+        jdbcTemplate.update(query, userId, EVENT_TYPE_REVIEW, OPERATION_TYPE_ADD, reviewId, Date.from(Instant.now()));
+    }
+
+    private void addToFeedUpdateReview(Integer userId, int reviewId) {
+        String query = "INSERT INTO events_history (user_id, event_type_id, operations_type_id, entity_id, date_time) " +
+                "VALUES (?, ?, ?, ?, ?)";
+        jdbcTemplate.update(query, userId, EVENT_TYPE_REVIEW, OPERATION_TYPE_UPDATE, reviewId, Date.from(Instant.now()));
+    }
+
+    private void addToFeedDeleteReview(int reviewId) {
+        String query = "INSERT INTO events_history (user_id, event_type_id, operations_type_id, entity_id, date_time) " +
+                "VALUES (?, ?, ?, ?, ?)";
+        jdbcTemplate.update(query, getUserIdFromReviewId(reviewId), EVENT_TYPE_REVIEW, OPERATION_TYPE_DELETE, reviewId, Date.from(Instant.now()));
+    }
+
+    private int getUserIdFromReviewId(int reviewId) {
+        SqlRowSet reviewSet = jdbcTemplate.queryForRowSet("SELECT user_id FROM film_reviews WHERE id = ?", reviewId);
+        reviewSet.next();
+        return reviewSet.getInt("user_id");
     }
 
 }
