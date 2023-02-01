@@ -127,7 +127,6 @@ public class UserDbStorage implements UserStorage {
                 if (countLinesSelect == 0) {
                     jdbcTemplate.update("INSERT INTO friends_list (user_id, friend_id) VALUES (?, ?);", firstUserId, secondUserId);
                     log.info(String.format("%s %d %s %d", "Пользователь с id", firstUserId, "добавил в друзья пользователя с id", secondUserId));
-                    //addToFeedAddFriend(firstUserId, secondUserId);
                     break;
                 }
             default:
@@ -193,9 +192,6 @@ public class UserDbStorage implements UserStorage {
     @Override
     public void deleteUser(long id) {
         userExistCheckUp(id);
-//        jdbcTemplate.update("DELETE FROM FILM_LIKES_BY_USER WHERE USER_ID = ? ", id);
-//        jdbcTemplate.update("DELETE FROM FRIENDS_LIST WHERE USER_ID = ? ", id);
-//        jdbcTemplate.update("DELETE FROM FRIENDS_LIST WHERE FRIEND_ID = ? ", id);
         jdbcTemplate.update("DELETE FROM USERS WHERE ID = ? ", id);
         log.info("Удалён пользователь с id : {} ", id);
     }

@@ -20,6 +20,7 @@ import java.util.List;
 public class UserController {
     final UserService userService;
     final String pathForAddOrDeleteFriends = "/{id}/friends/{friendId}";
+    final String pathForId = "/{id}";
 
     @Autowired
     public UserController(UserService userService) {
@@ -44,7 +45,7 @@ public class UserController {
     List<User> findUsers() {
         return new ArrayList<>(userService.findUsers());
     }
-    @GetMapping("/{id}")
+    @GetMapping(pathForId)
     User findUser(@PathVariable("id") long userId) {
         return userService.findUser(userId);
     }
@@ -61,7 +62,7 @@ public class UserController {
         return userService.getFeed(userId);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping(pathForId)
     public void delete(@PathVariable("id") long userId) {
         userService.deleteUser(userId);
     }

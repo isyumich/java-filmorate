@@ -322,10 +322,6 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public void deleteFilm(long id) {
         filmExistCheckUp(id);
-//        jdbcTemplate.update("delete   from DIRECTORS_FILMS where FILM_ID = ? ", id);
-//        jdbcTemplate.update("delete   from FILM_GENRE where FILM_ID = ? ", id);
-//        jdbcTemplate.update("delete   from FILM_LIKES_BY_USER where FILM_ID = ? ", id);
-//        jdbcTemplate.update("delete   from FILM_REVIEWS where FILM_ID = ? ", id);
         jdbcTemplate.update("delete   from FILMS where ID = ? ", id);
         log.info("Удалён фильм с id : {} ", id);
     }
