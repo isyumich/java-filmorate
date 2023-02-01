@@ -6,6 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MPA;
@@ -74,5 +77,48 @@ public class FilmService {
     public MPA findMPA(int mpaId) {
         log.info(String.format("%s %d", "Запрос на получение рейтинга по id", mpaId));
         return filmStorage.findMPA(mpaId);
+    }
+
+    public List<Film> getDirectorSortedFilms(int id, String param){
+        log.info("Запрос на отсортированный список фильмов");
+        return filmStorage.getDirectorSortedFilms(id, param);
+    }
+
+    public List<Director> getAllDirectors(){
+        log.info("Запрос на список всех режиссеров");
+        return filmStorage.getAllDirectors();
+    }
+
+    public Director getDirectorById(int id){
+        log.info("Запрос на режиссера по id");
+        return filmStorage.getDirectorById(id);
+    }
+
+    public Director createDirector(Director director){
+        log.info("Запрос на добавление нового режиссера");
+        return filmStorage.createDirector(director);
+    }
+
+    public Director updateDirector(Director director){
+        log.info("Запрос на изменение режиссера");
+        return filmStorage.updateDirector(director);
+    }
+
+    public Director deleteDirector(int id){
+        log.info("Запрос на удаление режиссера по id");
+        return filmStorage.deleteDirector(id);
+    }
+
+    public List <Film> getCommonFilms (long userId, long friendId){
+        return filmStorage.getCommonFilms(userId, friendId);
+    }
+    public void deleteFilm(long id){
+        log.info("Запрос на удаление фильма по id");
+        filmStorage.deleteFilm(id);
+    }
+
+    public List<Film> searchFilmByParameters(String fieldValue, String parameters) {
+        log.info("Поиск фильмов по параметру " + parameters);
+        return filmStorage.searchFilmByParameters(fieldValue, parameters);
     }
 }

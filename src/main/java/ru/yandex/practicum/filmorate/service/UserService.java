@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -57,5 +58,15 @@ public class UserService {
     public List<User> getFriendsList(long userId) {
         log.info(String.format("%s %d", "Запрос на получение списка друзей у пользователя", userId));
         return userStorage.getFriendsList(userId);
+    }
+
+    public List<Event> getFeed(long userId) {
+        log.info(String.format("%s %d", "Запрос на получение ленты событий пользователя", userId));
+        return userStorage.getFeed(userId);
+    }
+
+    public void deleteUser (long id){
+        log.info("Запрос на удаление пользователя по id");
+        userStorage.deleteUser(id);
     }
 }

@@ -3,17 +3,23 @@ package ru.yandex.practicum.filmorate;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.MPA;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.controller.RecommendationController;
+import ru.yandex.practicum.filmorate.controller.UserController;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.ReviewDBService;
 import ru.yandex.practicum.filmorate.service.TypeOperations;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.service.RecommendationService;
 import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 
@@ -21,18 +27,25 @@ import java.time.LocalDate;
 import java.util.*;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @TestPropertySource("/test-application.properties")
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class FilmorateApplicationTests {
     @Autowired
     final UserDbStorage userDbStorage;
     @Autowired
     final FilmDbStorage filmDbStorage;
+    @Autowired
+    final ReviewDBService reviewDBService;
+    final UserService userService;
+    final FilmService filmService;
+    final RecommendationController recommendController;
+    final RecommendationService recommendService;
     List<User> usersList;
     List<Film> filmsList;
 
@@ -292,5 +305,326 @@ class FilmorateApplicationTests {
                 .duration(duration)
                 .mpa(MPA.builder().id(mpaId).name(mpaName).build())
                 .build();
+    }
+
+    private Review createReview (String content, Boolean isPositive, Integer userId, Integer filmId){
+        Review review = new Review();
+        review.setContent(content);
+        review.setIsPositive(isPositive);
+        review.setUserId(userId);
+        review.setFilmId(filmId);
+        review.setUseful(0);
+        return review;
+    }
+
+    public void addReviewTest() {
+        reviewDBService.addReview(createReview("content 11", true, 1, 1));
+        reviewDBService.addReview(createReview("content 21", false, 2, 1));
+        reviewDBService.addReview(createReview("content 31", true, 3, 1));
+        reviewDBService.addReview(createReview("content 12", true, 1, 2));
+        reviewDBService.updateStatus(1, 1, 1);
+        reviewDBService.updateStatus(2, 1, 1);
+        reviewDBService.updateStatus(3, 1, 1);
+        reviewDBService.updateStatus(1, 2, 1);
+        reviewDBService.updateStatus(2, 2, 1);
+        reviewDBService.updateStatus(1, 3, 1);
+        reviewDBService.updateStatus(2, 3, -1);
+    }
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void findReviewByIdTest() {
+        addReviewTest();
+        Review review = reviewDBService.findReviewById(1);
+        Assertions.assertEquals(review.getContent(), "content 11");
+        Assertions.assertEquals(review.getIsPositive(), true);
+        Assertions.assertEquals(review.getUserId(), 1);
+        Assertions.assertEquals(review.getFilmId(), 1);
+        Assertions.assertEquals(review.getUseful(), 3);
+        Review review2 = reviewDBService.findReviewById(2);
+        Assertions.assertEquals(review2.getUseful(), 1);
+        Review review3 = reviewDBService.findReviewById(3);
+        Assertions.assertEquals(review3.getUseful(), 1);
+        Review review4 = reviewDBService.findReviewById(4);
+        Assertions.assertEquals(review4.getUseful(), 0);
+    }
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void updateReviewTest() {
+        addReviewTest();
+        Review updatedReviewData = createReview("content 31 false", false, 3, 1);
+        updatedReviewData.setReviewId(3);
+        reviewDBService.updateReview(updatedReviewData);
+        Review review = reviewDBService.findReviewById(3);
+        Assertions.assertEquals(review.getContent(), "content 31 false");
+        Assertions.assertEquals(review.getIsPositive(), false);
+    }
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void getReviewListByFilmIdTest(){
+        addReviewTest();
+        List<Review> reviews = reviewDBService.getReviewListByFilmId(1, 2);
+        Assertions.assertEquals(reviews.size(), 2);
+        Assertions.assertEquals(reviews.get(0).getReviewId(), 1);
+    }
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void removeReviewByIdTest() {
+        addReviewTest();
+        reviewDBService.removeReviewById(2);
+        Throwable exception = assertThrows(NotFoundException.class, () -> reviewDBService.findReviewById(2));
+        assertEquals("Review not found", exception.getMessage());
+    }
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void removeStatusTest() {
+        addReviewTest();
+        reviewDBService.removeStatus(2, 3, -1);
+        Review review2 = reviewDBService.findReviewById(2);
+        Assertions.assertEquals(review2.getUseful(), 2);
+        reviewDBService.removeStatus(2, 2, 1);
+        review2 = reviewDBService.findReviewById(2);
+        Assertions.assertEquals(review2.getUseful(), 1);
+    }
+
+    public void createTestDirectors() {
+        filmDbStorage.createDirector(createTestDirector(1, "Director Name1"));
+        filmDbStorage.createDirector(createTestDirector(2, "Director Name2"));
+        filmDbStorage.createDirector(createTestDirector(3, "Director Name3"));
+    }
+
+    private Director createTestDirector(int id, String name) {
+        return Director.builder()
+                .id(id)
+                .name(name)
+                .build();
+    }
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void getDirectorByIdTest() {
+        createTestDirectors();
+        Director director = filmDbStorage.getDirectorById(2);
+        Assertions.assertEquals(director.getId(), 2);
+        Assertions.assertEquals(director.getName(), "Director Name2");
+    }
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void getAllDirectorsTest() {
+        createTestDirectors();
+        List<Director> directors = filmDbStorage.getAllDirectors();
+        Assertions.assertEquals(directors.get(0).getId(), 1);
+        Assertions.assertEquals(directors.get(0).getName(), "Director Name1");
+        Assertions.assertEquals(directors.get(1).getId(), 2);
+        Assertions.assertEquals(directors.get(1).getName(), "Director Name2");
+        Assertions.assertEquals(directors.get(2).getId(), 3);
+        Assertions.assertEquals(directors.get(2).getName(), "Director Name3");
+    }
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void updateFilmAndGetDirectorSortedFilmsTest() {
+        createTestDirectors();
+        for (Film film : filmDbStorage.findFilms()){
+            List<Director> directorList = new ArrayList<>();
+            directorList.add(filmDbStorage.getDirectorById(1));
+            film.setDirectors(directorList);
+            filmDbStorage.updateFilm(film);
+        }
+        List<Film> films = filmDbStorage.getDirectorSortedFilms(1, "year");
+        Assertions.assertEquals(films.size(), 3);
+        Assertions.assertEquals(films.get(0).getId(), 1);
+        Assertions.assertEquals(films.get(1).getId(), 2);
+        Assertions.assertEquals(films.get(2).getId(), 3);
+    }
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void updateDirectorTest() {
+        createTestDirectors();
+        Director director = filmDbStorage.getDirectorById(1);
+        Assertions.assertEquals(director.getId(), 1);
+        Assertions.assertEquals(director.getName(), "Director Name1");
+        Director updDirector = createTestDirector(1, "Director Name1 Updated");
+        filmDbStorage.updateDirector(updDirector);
+        director = filmDbStorage.getDirectorById(1);
+        Assertions.assertEquals(director.getId(), 1);
+        Assertions.assertEquals(director.getName(), "Director Name1 Updated");
+    }
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void removeDirectorTest() {
+        createTestDirectors();
+        filmDbStorage.deleteDirector(3);
+        Assertions.assertEquals(filmDbStorage.getAllDirectors().size(), 2);
+        Throwable exception = assertThrows(NotFoundException.class, () -> filmDbStorage.getDirectorById(3));
+        assertEquals("Director с id 3 не найден", exception.getMessage());
+    }
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void addToFeedFriendsEvents() {
+        userDbStorage.addOrDeleteToFriends(1, 2, TypeOperations.ADD.toString());
+        userDbStorage.addOrDeleteToFriends(1, 2, TypeOperations.DELETE.toString());
+        List<Event> feed = userDbStorage.getFeed(1);
+        assertAll(
+                () -> assertEquals(2, feed.size()),
+                () -> assertEquals(1, feed.get(0).getUserId()),
+                () -> assertEquals("ADD", feed.get(0).getOperation()),
+                () -> assertEquals("FRIEND", feed.get(1).getEventType()),
+                () -> assertEquals(2, feed.get(0).getEntityId())
+        );
+    }
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void addToFeedLikeEvents() {
+        filmDbStorage.addOrDeleteLikeToFilm(1, 1, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(1, 1, TypeOperations.DELETE.toString());
+        List<Event> feed = userDbStorage.getFeed(1);
+        assertAll(
+                () -> assertEquals(2, feed.size()),
+                () -> assertEquals(1, feed.get(0).getUserId()),
+                () -> assertEquals("ADD", feed.get(0).getOperation()),
+                () -> assertEquals("LIKE", feed.get(1).getEventType()),
+                () -> assertEquals(1, feed.get(0).getEntityId())
+        );
+    }
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void addToFeedReviewEvents() {
+        addReviewTest();
+        List<Event> feed = userDbStorage.getFeed(1);
+        assertAll(
+                () -> assertEquals(2, feed.size()),
+                () -> assertEquals(1, feed.get(0).getUserId()),
+                () -> assertEquals("ADD", feed.get(0).getOperation()),
+                () -> assertEquals("REVIEW", feed.get(1).getEventType()),
+                () -> assertEquals(4, feed.get(1).getEntityId())
+        );
+    }
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    void getRecommendationsTest() {
+        usersList = createTestUsers();
+        for (User user : usersList) {
+            userDbStorage.addNewUser(user);
+        }
+        filmsList = createTestFilms();
+        for (Film film : filmsList) {
+            filmDbStorage.addNewFilm(film);
+        }
+
+        filmService.addOrDeleteLikeToFilm(1L, 2L, "ADD");
+
+        Optional<Film> filmOptional = Optional.of(recommendService.getRecommendation(1L).get(0));
+        assertThat(filmOptional)
+                .isPresent()
+                .hasValueSatisfying(film ->
+                        assertThat(film).hasFieldOrPropertyWithValue("id", 1L));
+        filmService.addOrDeleteLikeToFilm(1L, 2L, "DELETE");
+        filmService.addOrDeleteLikeToFilm(2L, 2L, "ADD");
+        filmOptional = Optional.of(recommendService.getRecommendation(1L).get(0));
+        assertThat(filmOptional)
+                .isPresent()
+                .hasValueSatisfying(film ->
+                        assertThat(film).hasFieldOrPropertyWithValue("id", 2L));
+        int exceptionThrows = 0;
+        try {
+            Optional<List<Film>> filmsOptional = Optional.of(recommendService.getRecommendation(999L));;
+        } catch (NotFoundException e) {
+            exceptionThrows = 1;
+        }
+        assertEquals(1, exceptionThrows);
+    }
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void removeUserTest() {
+        filmDbStorage.addOrDeleteLikeToFilm(2, 1, TypeOperations.ADD.toString());
+
+        assertEquals(filmDbStorage.findFilm(2).getCountLikes(), 1);
+
+        userDbStorage.deleteUser(1);
+
+        assertEquals(userDbStorage.findUsers().size(), 2);
+
+        assertEquals(filmDbStorage.findFilm(2).getCountLikes(), 0);
+
+        assertEquals(userDbStorage.findUsers(), List.of(userDbStorage.findUser(2), userDbStorage.findUser(3)));
+
+        assertThrows(NotFoundException.class, () -> userDbStorage.findUser(1));
+    }
+
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void removeFilmTest() {
+
+        filmDbStorage.addOrDeleteLikeToFilm(1, 1, TypeOperations.ADD.toString());
+
+        assertEquals(filmDbStorage.findFilm(1).getCountLikes(), 1);
+
+        filmDbStorage.deleteFilm(1);
+
+        assertEquals(filmDbStorage.findFilms().size(), 2);
+
+        assertEquals(filmDbStorage.findFilms(), List.of(filmDbStorage.findFilm(2), filmDbStorage.findFilm(3)));
+
+        assertThrows(NotFoundException.class, () -> filmDbStorage.findFilm(1));
+
+    }
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void emptyCommonFilms() {
+        filmDbStorage.addOrDeleteLikeToFilm(1, 1, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(1, 3, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(2, 1, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(2, 3, TypeOperations.ADD.toString());
+
+        assertTrue(filmDbStorage.getCommonFilms(1,2).isEmpty());
+
+    }
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void returnCommonFilms() {
+        filmDbStorage.addOrDeleteLikeToFilm(1, 1, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(1, 2, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(2, 1, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(2, 3, TypeOperations.ADD.toString());
+
+        assertEquals(filmDbStorage.getCommonFilms(1,2), List.of(filmDbStorage.findFilm(1)));
+
+    }
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void returnEmptyList() {
+        filmDbStorage.addOrDeleteLikeToFilm(1, 1, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(1, 2, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(2, 1, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(2, 3, TypeOperations.ADD.toString());
+
+        assertEquals(filmDbStorage.getCommonFilms(1,2), List.of(filmDbStorage.findFilm(1)));
+
+        filmDbStorage.addOrDeleteLikeToFilm(1, 2, TypeOperations.DELETE.toString());
+
+        assertTrue(filmDbStorage.getCommonFilms(1,2).isEmpty());
+    }
+    @Test
+    @Sql(value = {"test-schema.sql", "test-data.sql", "create-films.sql", "create-users.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void searchFilmsTest() {
+        filmDbStorage.addOrDeleteLikeToFilm(2, 1, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(2, 2, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(2, 3, TypeOperations.ADD.toString());
+        filmDbStorage.addOrDeleteLikeToFilm(1, 3, TypeOperations.ADD.toString());
+        List<Film> searchFilms = List.of(filmDbStorage.findFilm(2), filmDbStorage.findFilm(1), filmDbStorage.findFilm(3));
+        assertEquals(filmDbStorage.searchFilmByParameters("testname", "title"), searchFilms);
     }
 }

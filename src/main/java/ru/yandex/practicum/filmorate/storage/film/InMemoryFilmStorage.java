@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MPA;
@@ -150,5 +151,50 @@ public class InMemoryFilmStorage implements FilmStorage {
         if (film.getGenres() == null) {
             film.setGenres(new ArrayList<>());
         }
+    }
+
+    @Override
+    public List<Film> getDirectorSortedFilms(int id, String param) {
+        return null;
+    }
+
+    @Override
+    public List<Director> getAllDirectors() {
+        return null;
+    }
+
+    @Override
+    public Director getDirectorById(int id) {
+        return null;
+    }
+
+    @Override
+    public Director createDirector(Director director) {
+        return null;
+    }
+
+    @Override
+    public Director updateDirector(Director director) {
+        return null;
+    }
+
+    @Override
+    public Director deleteDirector(int id) {
+        return null;
+    }
+
+    @Override
+    public void deleteFilm(long id) {
+
+    }
+
+    @Override
+    public List<Film> getCommonFilms(long userId, long friendId) {
+        return null;
+    }
+
+    @Override
+    public List<Film> searchFilmByParameters(String query, String parameters) {
+        return null;
     }
 }
